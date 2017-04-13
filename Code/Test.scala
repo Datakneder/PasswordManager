@@ -87,6 +87,10 @@ package nl.datakneder.run
                                         {case n : Text.Interface => 
                                             n.caption()
                                         }})
+                                    .add({_ => _ => 
+                                        {case Settings => 
+                                            "Settings"
+                                        }})
                                 Persistance.DefaultXML
                                     .add({_ => _ => 
                                         {case n => 

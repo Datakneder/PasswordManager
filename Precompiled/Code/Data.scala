@@ -3,7 +3,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Packages._
         
         object Framework
-            extends Template_FrameworkPackage("Data", 1490948850171L /*CompileDate*/)
+            extends Template_FrameworkPackage("Data", 1492097835566L /*CompileDate*/)
                 {
                     import nl.datakneder.core.Utils.Framework.Reflect
                     
@@ -455,7 +455,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils._
         
         object Implementation
-            extends Template_ImplementationPackage("Data", 1490948850171L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_ImplementationPackage("Data", 1492097835566L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Utils.Framework._
                     import Framework.KeyDefinitions.NoModifier
@@ -1169,6 +1169,7 @@ package nl.datakneder.core.Data
                                     }
                     def initialise() = 
                         {
+                            Framework.XMLUtils.assign(Implementation.XMLUtils)
                             Framework.KeyManager.assign(Implementation.KeyManager)
                             Framework.FileOrFolder.factory(Implementation.FileOrFolder)
                             Framework.TextAtom.factory(Implementation.TextAtom)
@@ -1188,7 +1189,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils.Framework._
         
         object Test
-            extends Template_TestPackage("Data", 1490948850171L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_TestPackage("Data", 1492097835566L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Acid.Framework.Acid
 
