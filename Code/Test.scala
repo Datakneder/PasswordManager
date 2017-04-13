@@ -116,7 +116,14 @@ package nl.datakneder.run
                                             <Boolean>{n}</Boolean>
                                         }})
                         //Password.start()
-                        if (PasswordVault.Settings.edit()) PasswordVault.Settings.save()
+                        //if (PasswordVault.Settings.edit()) PasswordVault.Settings.save()
+                        
+                        object Settings
+                            {
+                                val name : String = "Harry"
+                                val age : Int = 20
+                            }
+                        Settings.save()
                         
                     }
             }
