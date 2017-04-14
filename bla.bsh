@@ -1,0 +1,4 @@
+source agent.bsh
+echo Bla.bsh
+
+git checkout $1
