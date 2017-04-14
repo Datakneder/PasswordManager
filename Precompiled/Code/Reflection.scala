@@ -62,6 +62,10 @@ package nl.datakneder.temp
                                 
                                 list.map({f => new Field(im, f)})
                             }
+                        def isModule(_x : Object) : Boolean =
+                            {
+                                _x.getClass.getName.endsWith("$")
+                            }
                     }
                 
             }

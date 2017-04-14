@@ -127,7 +127,11 @@ package nl.datakneder.run
                                 val name : String = "Harry"
                                 val age : Int = 20
                             }
-                        Settings.save()
+                        
+                        System.out.println("*****************\n")
+                        val p = new javax.swing.JButton("AA")
+                        System.out.println("(%s, %b)".format(p.toString, Reflection.isModule(p)))
+                        System.out.println("(%s, %b)".format(Settings, Reflection.isModule(Settings)))
                         
                     }
             }
