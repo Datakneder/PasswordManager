@@ -3,7 +3,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Packages._
         
         object Framework
-            extends Template_FrameworkPackage("Data", 1492097835566L /*CompileDate*/)
+            extends Template_FrameworkPackage("Data", 1492161262676L /*CompileDate*/)
                 {
                     import nl.datakneder.core.Utils.Framework.Reflect
                     
@@ -455,7 +455,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils._
         
         object Implementation
-            extends Template_ImplementationPackage("Data", 1492097835566L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_ImplementationPackage("Data", 1492161262676L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Utils.Framework._
                     import Framework.KeyDefinitions.NoModifier
@@ -821,37 +821,37 @@ package nl.datakneder.core.Data
                                                 }
                                             def print(_x : scala.xml.Node) : scala.xml.Node = 
                                                 {
-                                                    var result = ""
-                                                    def check[A](_x : A) : Unit = 
-                                                        {
-                                                            _x.toString.split("\n")
-                                                                .filter(_.trim.size > 0)
-                                                                .foreach({p => result = result + "\n" + p})
-                                                        }
-                                                    def printXML(_indent : String, _y : scala.xml.Node) : Unit = 
+                                                    def printXML(_indent : String, _y : scala.xml.Node) : List[scala.xml.Node] = 
                                                         {
                                                             _y match
                                                                 {
                                                                     case null => 
-                                                                        new scala.xml.Text("")
+                                                                        List[scala.xml.Node](new scala.xml.Text(""))
                                                                     case p : scala.xml.Atom[_] =>
-                                                                        check(_indent + p)
+                                                                        List[scala.xml.Node](p)
                                                                     case _ =>
                                                                         _y.child.size match
                                                                             {
                                                                                 case 0 =>
-                                                                                    check(_indent + _y)
+                                                                                    List[scala.xml.Node](new scala.xml.Text("\n" + _indent), _y)
                                                                                 case 1 if (_y.child(0).isInstanceOf[scala.xml.Atom[_]]) =>
-                                                                                    check(_indent + _y)
+                                                                                    List[scala.xml.Node](_y)
                                                                                 case _ =>
-                                                                                    check(_indent + "<" + _y.label  + _y.attributes.toString + ">")
-                                                                                    _y.child.foreach({c => printXML("    " + _indent, c)})
-                                                                                    check(_indent + "</" + _y.label + ">")
+                                                                                    List[scala.xml.Node]((<p>{new scala.xml.Text("\n")}{
+                                                                                            _y.child
+                                                                                                .map(
+                                                                                                    {n => 
+                                                                                                        List[scala.xml.Node](new scala.xml.Text("    " + _indent)) ++ 
+                                                                                                            printXML("    " + _indent, n) ++
+                                                                                                            List[scala.xml.Node](new scala.xml.Text("\n"))
+                                                                                                    })
+                                                                                    }{new scala.xml.Text(_indent)}</p>).copy(label = _y.label))
                                                                             }
                                                                 }
                                                         }
-                                                    printXML("",_x)
-                                                    scala.xml.XML.loadString(result.substring(1))
+                                                    val l = printXML("",_x)
+                                                    l(l.size - 1)
+                                                    //scala.xml.XML.loadString(result.substring(1))
                                                 }
                                             def merge(_x : scala.xml.Node, _y : scala.xml.Node) : scala.xml.Node = 
                                                 {
@@ -1189,7 +1189,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils.Framework._
         
         object Test
-            extends Template_TestPackage("Data", 1492097835566L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_TestPackage("Data", 1492161262676L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Acid.Framework.Acid
 
@@ -1460,7 +1460,12 @@ package nl.datakneder.core.Data
                                         // print
                                             // Just output. Not tested.
                                                 {
-                                                    
+                                                    Acid(<p></p>, XMLUtils.print(<p></p>))  
+                                                    Acid(<q></q>, XMLUtils.print(<q></q>))  
+                                                    var xml = (<p></p>).copy(label="p$q")
+                                                    Acid(xml, XMLUtils.print(xml))  
+                                                    xml = <p><q>12</q><r><m>x</m><n>y</n></r></p>
+                                                    Acid("<p>\n    <q>12</q>\n    <r>\n        <m>x</m>\n        <n>y</n>\n    </r>\n</p>", XMLUtils.print(xml).toString)  
                                                 }
                                     }
                             }

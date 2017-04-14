@@ -87,10 +87,10 @@ package nl.datakneder.run
                                         {case n : Text.Interface => 
                                             n.caption()
                                         }})
-                                    .add({_ => _ => 
-                                        {case Settings => 
-                                            "Settings"
-                                        }})
+                                    //.add({_ => _ => 
+                                    //    {case Settings => 
+                                    //        "Settings"
+                                    //    }})
                                 Persistance.DefaultXML
                                     .add({_ => _ => 
                                         {case n => 
@@ -121,7 +121,7 @@ package nl.datakneder.run
                                         }})
                         //Password.start()
                         //if (PasswordVault.Settings.edit()) PasswordVault.Settings.save()
-                        
+      
                         object Settings
                             {
                                 val name : String = "Harry"
