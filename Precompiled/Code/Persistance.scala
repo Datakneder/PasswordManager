@@ -55,19 +55,30 @@ package nl.datakneder.temp
                                 {
                                     
                                 }
+                        object LoadXML
+                            extends Convertor[Unit]({() => })
+                                {
+                                    
+                                }
                         def construct(_x : scala.xml.Elem) : Any = 
                             {
                                 ""
                             }
                         def load(_y : Any) : Unit = 
                             {
+                                Try(load(_y,scala.xml.XML.load(DefaultName(_y) +".xml"))) 
+                            }
+                        def load(_y : Any, _xml : scala.xml.Node) : Unit = 
+                            {
+                                //System.out.println("Loading: ")
+                                //System.out.println(_xml)
+                                LoadXML((_y, _xml))
                             }
                         def save(_x : Any) : Unit = 
                             {
-                                System.out.println("Saving...")
+                                //System.out.println("Saving...")
                                 val xml = DefaultXML(_x)
-                                System.out.println(xml)
-                                System.out.println(XMLUtils.print(xml))
+                                scala.xml.XML.save(DefaultName(_x) +".xml", xml.print)
                             }
                     }
                 def initialise() = 

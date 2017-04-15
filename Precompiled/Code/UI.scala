@@ -149,7 +149,7 @@ package nl.datakneder.temp
                         UI.DefaultComponent
                             .add({_ => _ => 
                                 {case (p : UI.iConstructionData, n : String) => 
-                                        System.out.println("Name = %s".format(p.name))
+                                    //System.out.println("Name = %s".format(p.name))
                                     TextField()
                                         .content.applyCast(p.read)
                                         .content.update(p.write)

@@ -1,9 +1,10 @@
 package nl.datakneder.core.Data
     {
+        import scala.language.implicitConversions
         import nl.datakneder.core.Packages._
         
         object Framework
-            extends Template_FrameworkPackage("Data", 1492161262676L /*CompileDate*/)
+            extends Template_FrameworkPackage("Data", 1492246262864L /*CompileDate*/)
                 {
                     import nl.datakneder.core.Utils.Framework.Reflect
                     
@@ -264,6 +265,10 @@ package nl.datakneder.core.Data
                                 type BasicStorageType = scala.xml.Node
                         // Utilities
                             // XMLUtils
+                                implicit def InjectXMLUtils(_x : scala.xml.Node) =
+                                    new Object {
+                                        def print() : scala.xml.Node = XMLUtils.print(_x)
+                                    }
                                 object XMLUtils
                                     extends Template_Object("XMLUtils") 
                                         {
@@ -455,7 +460,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils._
         
         object Implementation
-            extends Template_ImplementationPackage("Data", 1492161262676L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_ImplementationPackage("Data", 1492246262864L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Utils.Framework._
                     import Framework.KeyDefinitions.NoModifier
@@ -1189,7 +1194,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils.Framework._
         
         object Test
-            extends Template_TestPackage("Data", 1492161262676L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_TestPackage("Data", 1492246262864L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Acid.Framework.Acid
 

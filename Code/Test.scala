@@ -31,6 +31,43 @@ package nl.datakneder.run
                                         }})
                                 UI.DefaultComponent
                                     .add({_ => _ => 
+                                        {case (p : UI.iConstructionData, n : Int) => 
+                                            //System.out.println("Name = %s".format(p.name))
+                                            var content = p.read().toString
+                                            TextField()
+                                                .content.applyCast({() => content})
+                                                .content.update({x => content = x; Try(p.write(content.toInt))})
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (p : UI.iConstructionData, n : Object) if (Reflection.isModule(n)) => 
+                                            val panel = TwoColumnPanel()
+                                            
+                                            val iterator = Reflection.fields(n)
+                                            iterator
+                                                .foreach(
+                                                    {f =>
+                                                        Try(
+                                                            {
+                                                                val name = 
+                                                                    {
+                                                                        val result = UI.DefaultName(f.name())
+                                                                        if (result == "") f.name() else result
+                                                                    }
+            
+                                                                panel.add(name, 
+                                                                    {
+                                                                        val q = UI.ConstructionData(n, name, {() => f()}, {f(_)})
+                                                                        val result = UI.DefaultComponent((q, f()))
+                                                                        //System.out.println("     component: " + result.getClass.getName)
+                                                                        result
+                                                                    })
+                                                            })
+                                                    })
+                                            
+                                            
+                                            panel
+                                        }})
+                                    .add({_ => _ => 
                                         {case (p : UI.iConstructionData, n : Text.Interface) => 
                                             TextField()
                                                 .minimalWidth(200)
@@ -87,20 +124,19 @@ package nl.datakneder.run
                                         {case n : Text.Interface => 
                                             n.caption()
                                         }})
-                                    //.add({_ => _ => 
-                                    //    {case Settings => 
-                                    //        "Settings"
-                                    //    }})
+                                    .add({_ => _ => 
+                                        {case x if (Reflection.isModule(x)) => 
+                                            Reflection.moduleName(x)
+                                        }})
                                 Persistance.DefaultXML
                                     .add({_ => _ => 
-                                        {case n => 
+                                        {case n if (n != null) => 
                                             {<p>{
                                                 Reflection.fields(n)
                                                     .map(
                                                         {f => 
                                                             Persistance.DefaultXML(f())
                                                         })
-                                                
                                             }</p>}.copy(label = Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
@@ -119,6 +155,47 @@ package nl.datakneder.run
                                         {case n : Boolean => 
                                             <Boolean>{n}</Boolean>
                                         }})
+                                Persistance.LoadXML
+                                    .add({_ => _ => 
+                                        {case x =>
+                                            System.out.println("Could not resolve: " + x)
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (_y, _xml : scala.xml.Node) => 
+                                            //System.out.println("Generic object found")
+                                            Reflection
+                                                .fields(_y)
+                                                .foreach(
+                                                    {f =>
+                                                        val label = Persistance.DefaultName(f())
+                                                        _xml.child
+                                                            .filter(_.label == label)
+                                                            .foreach(
+                                                                {n => 
+                                                                    //System.out.println("%s => %s of type: (%s)".format(n.toString, f.name(), f.typeSignature()))
+                                                                    try 
+                                                                        {
+                                                                            if (Reflection.isModule(f()))
+                                                                                Persistance.LoadXML((f(), n))
+                                                                            else
+                                                                                Persistance.LoadXML((f, n))      
+                                                                        } 
+                                                                    catch 
+                                                                        {
+                                                                            case x : Throwable =>
+                                                                                x.printStackTrace
+                                                                        }
+                                                                })
+                                                    })
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (_f : Reflection.iField, _xml : scala.xml.Node) if (_f.typeSignature == "java.lang.String")=>
+                                            Try(_f(_xml.child(0).toString))
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (_f : Reflection.iField, _xml : scala.xml.Node) if (_f.typeSignature == "Int")=> 
+                                            Try(_f(_xml.child(0).toString.toInt))
+                                        }})
                         //Password.start()
                         //if (PasswordVault.Settings.edit()) PasswordVault.Settings.save()
       
@@ -126,13 +203,19 @@ package nl.datakneder.run
                             {
                                 val name : String = "Harry"
                                 val age : Int = 20
+                                object Font
+                                    {
+                                        val name = "Comic sans serif"
+                                        val size  = 20
+                                    }
                             }
-                        
-                        System.out.println("*****************\n")
-                        val p = new javax.swing.JButton("AA")
-                        System.out.println("(%s, %b)".format(p.toString, Reflection.isModule(p)))
-                        System.out.println("(%s, %b)".format(Settings, Reflection.isModule(Settings)))
-                        
+                        Settings.Font
+                        //System.out.println("Font: " + Settings.Font)
+                        //Reflection.fields(Settings)
+                        //    .foreach({f => System.out.println("%s: %s".format(f.name, f().toString))})
+                        //System.out.println("--------------------")
+                        Settings.load
+                        if (Settings.edit()) Settings.save
                     }
             }
     }
