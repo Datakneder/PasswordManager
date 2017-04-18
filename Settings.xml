@@ -1,8 +1,8 @@
 <Settings>
-    <Integer>12</Integer>
-    <String>Herman</String>
+    <Name>Annie</Name>
+    <Age>1</Age>
     <Font>
-        <Integer>15</Integer>
-        <String>MyFont</String>
+        <Name>Henk</Name>
+        <Age>2</Age>
     </Font>
 </Settings>

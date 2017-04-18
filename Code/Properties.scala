@@ -55,12 +55,46 @@ package nl.datakneder.temp
                 trait iPropertyValue[A]
                     extends iProperty
                         {
+                            private var __stringValue : Option[String] = None
+                            def stringValue() : Option[String] = 
+                                {
+                                    if (__stringValue == None && __value != None)
+                                        {
+                                            __stringValue = TryCatch(Some(__write(__value.get)),None)
+                                            System.out.println("$s.stringValue is set to %s.".format(caption(), __stringValue.toString))
+                                        }
+                                    __stringValue
+                                }
+                            def stringValue(_x : Option[String]) : this.type = 
+                                Reflect(
+                                        {
+                                            __stringValue = _x
+                                            __value = None
+                                        }, this)
+                            def stringValue(_x : String) : this.type = stringValue(Some(_x))
                             private var __value : Option[A] = None
-                            private var __default : Option[A] = None
                             def value() : Option[A] = __value
+                            def apply(_x : A) : this.type = 
+                                Reflect(
+                                    {
+                                        __value = Some(_x)
+                                        __stringValue = None
+                                    }, this)
+                            
+                            private var __default : Option[A] = None
+                            private var __read : String => Option[A] = {_ => None}
+                            def read(_x : String => Option[A]) : this.type = Reflect(__read = _x, this)
+                            private var __write : A => String = {x => x.toString}
+                            def write(_f : A => String) : this.type = Reflect(__write = _f, this)
                             def default() : Option[A] = __default
-                            def apply() : A = __value.getOrElse(__default.get)
-                            def apply(_x : A) : this.type = Reflect(__value = Some(_x), this)
+                            def apply() : A = 
+                                {
+                                    if (__value == None)
+                                        {
+                                            Try({__value = __read(__stringValue.get)})
+                                        }
+                                    __value.getOrElse(__default.get)
+                                }
                             def default(_x : A) : this.type = Reflect(__default = Some(_x), this)
                         }
                 class TupleTemplate(_x : String)
@@ -71,6 +105,7 @@ package nl.datakneder.temp
                                 extends TupleTemplate(_x)
                                     {
                                         parent(__template)
+                                        __template.children.add(this)
                                     }
                         }
                 class Tuple(_x : String)
@@ -87,6 +122,7 @@ package nl.datakneder.temp
                                 {
                                     val result = new PropertyValue[A](_x)
                                     result.parent(Some(_owner))
+                                    _owner.children.add(result)
                                     result
                                 }
                             def PropertyValue[A](_x : String, _v : A) : iPropertyValue[A] = PropertyValue(_x)(_v)

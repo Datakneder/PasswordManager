@@ -21,15 +21,15 @@ package nl.datakneder.temp
 
                 object UI
                     {
-                        trait iConstructionData
-                            {
-                                val owner : Object
-                                val name : String
-                                val read : () => Any
-                                val write : Any => Unit
-                            }
-                        case class ConstructionData(owner : Object, name : String, read : () => Any, write : Any => Unit)
-                            extends iConstructionData
+                        //trait iConstructionData
+                        //    {
+                        //        val owner : Object
+                        //        val name : String
+                        //        val read : () => Any
+                        //        val write : Any => Unit
+                        //    }
+                        //case class ConstructionData(owner : Object, name : String, read : () => Any, write : Any => Unit)
+                        //    extends iConstructionData
                         class Convertor[A](_default : () => A)
                             {
                                 private var __componentContext = Context[A]({_ => _default()})
@@ -70,32 +70,38 @@ package nl.datakneder.temp
                             {
                                 import nl.datakneder.temp.Reflection._
                                 
-                                val panel = TwoColumnPanel()
+                                DefaultComponent(_x) match
+                                    {
+                                        case p : iAddableComponent =>
+                                            p
+                                        case _ =>
+                                            null
+                                    }
                                 
-                                val iterator = Reflection.fields(_x, _names :_*)
-                                iterator
-                                    .foreach(
-                                        {f =>
-                                            Try(
-                                                {
-                                                    val name = 
-                                                        {
-                                                            val result = DefaultName(f.name())
-                                                            if (result == "") f.name() else result
-                                                        }
-
-                                                    panel.add(name, 
-                                                        {
-                                                            val p = ConstructionData(_x, name, {() => f()}, {f(_)})
-                                                            val result = DefaultComponent((p, f()))
-                                                            //System.out.println("     component: " + result.getClass.getName)
-                                                            result
-                                                        })
-                                                })
-                                        })
-                                
-                                
-                                panel
+                                //val panel = TwoColumnPanel()
+                                //
+                                //val iterator = Reflection.fields(_x, _names :_*)
+                                //iterator
+                                //    .foreach(
+                                //        {f =>
+                                //            Try(
+                                //                {
+                                //                    val name = 
+                                //                        {
+                                //                            val result = DefaultName(f.name())
+                                //                            if (result == "") f.name() else result
+                                //                        }
+                                //
+                                //                    panel.add(name, 
+                                //                        {
+                                //                            val p = ConstructionData(_x, name, {() => f()}, {f(_)})
+                                //                            val result = DefaultComponent((p, f()))
+                                //                            //System.out.println("     component: " + result.getClass.getName)
+                                //                            result
+                                //                        })
+                                //                })
+                                //        })
+                                //panel
                             }
                         def edit(_x : Object, _names : String*) : Boolean = 
                             {
@@ -146,14 +152,14 @@ package nl.datakneder.temp
                     }
                 def initialise() = 
                     {
-                        UI.DefaultComponent
-                            .add({_ => _ => 
-                                {case (p : UI.iConstructionData, n : String) => 
-                                    //System.out.println("Name = %s".format(p.name))
-                                    TextField()
-                                        .content.applyCast(p.read)
-                                        .content.update(p.write)
-                                }})
+                        //UI.DefaultComponent
+                        //    .add({_ => _ => 
+                        //        {case (p : UI.iConstructionData, n : String) => 
+                        //            //System.out.println("Name = %s".format(p.name))
+                        //            TextField()
+                        //                .content.applyCast(p.read)
+                        //                .content.update(p.write)
+                        //        }})
                         
                     }
             }

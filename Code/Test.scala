@@ -26,96 +26,96 @@ package nl.datakneder.run
                         
                         // Setup
                             // UI
-                                UI.DefaultName
-                                    .add({_ => _ => 
-                                        {case n : Text.Interface => 
-                                            n.caption()
-                                        }})
-                                UI.DefaultComponent
-                                    .add({_ => _ => 
-                                        {case (p : UI.iConstructionData, n : Int) => 
-                                            //System.out.println("Name = %s".format(p.name))
-                                            var content = p.read().toString
-                                            TextField()
-                                                .content.applyCast({() => content})
-                                                .content.update({x => content = x; Try(p.write(content.toInt))})
-                                        }})
-                                    .add({_ => _ => 
-                                        {case (p : UI.iConstructionData, n : Object) if (Reflection.isModule(n)) => 
-                                            val panel = TwoColumnPanel()
-                                            
-                                            val iterator = Reflection.fields(n)
-                                            iterator
-                                                .foreach(
-                                                    {f =>
-                                                        Try(
-                                                            {
-                                                                val name = 
-                                                                    {
-                                                                        val result = UI.DefaultName(f.name())
-                                                                        if (result == "") f.name() else result
-                                                                    }
-            
-                                                                panel.add(name, 
-                                                                    {
-                                                                        val q = UI.ConstructionData(n, name, {() => f()}, {f(_)})
-                                                                        val result = UI.DefaultComponent((q, f()))
-                                                                        //System.out.println("     component: " + result.getClass.getName)
-                                                                        result
-                                                                    })
-                                                            })
-                                                    })
-                                            
-                                            
-                                            panel
-                                        }})
-                                    .add({_ => _ => 
-                                        {case (p : UI.iConstructionData, n : Text.Interface) => 
-                                            TextField()
-                                                .minimalWidth(200)
-                                                .content.applyCast(n.apply _)
-                                                .content.update(n.apply(_))
-                                        }})
-                                UI.DefaultComponent
-                                    .add({_ => _ => 
-                                        {case (p : UI.iConstructionData, n : Password.Interface) => 
-                                            PasswordField()
-                                                .minimalWidth(200)
-                                                .content.applyCast(n.apply _)
-                                                .content.update(n.apply(_))
-                                        }})
-                                UI.DefaultComponent
-                                    .add({_ => _ => 
-                                        {case (p : UI.iConstructionData, n : FileName.Interface) =>
-                                            val borderPanel = BorderPanel()
-                                            def openFileDialog() : Unit = 
-                                                {
-                                                    val fileChooser = new javax.swing.JFileChooser()
-                                                    Try({fileChooser.setSelectedFile(new java.io.File(n()))})
-                                                    if (fileChooser.showOpenDialog(borderPanel.component) == javax.swing.JFileChooser.APPROVE_OPTION)
-                                                        {
-                                                            n(fileChooser.getSelectedFile.getAbsolutePath)
-                                                        }
-                                                }
-                                            borderPanel
-                                                .keyAction(VK_F2, openFileDialog _)
-                                                .center(
-                                                    TextField()
-                                                        .content.applyCast(n.apply _)
-                                                        .content.update(n.apply(_))
-                                                        .backColor({() => 
-                                                            TryCatch(
-                                                                {
-                                                                    //System.out.println("Color: " + (n(), new java.io.File(n()).exists))
-                                                                    if (new java.io.File(n()).exists || n().size == 0) Some(java.awt.Color.WHITE) else Some(java.awt.Color.RED)
-                                                                }, Some(java.awt.Color.RED))}))
-                                                .east(
-                                                    Button("...")
-                                                        .onClick(openFileDialog _))
-                                                .minimalWidth(200)
-                                        }})
-                    
-                            
+                                //UI.DefaultName
+                                //    .add({_ => _ => 
+                                //        {case n : Text.Interface => 
+                                //            n.caption()
+                                //        }})
+                                //UI.DefaultComponent
+                                //    .add({_ => _ => 
+                                //        {case (p : UI.iConstructionData, n : Int) => 
+                                //            //System.out.println("Name = %s".format(p.name))
+                                //            var content = p.read().toString
+                                //            TextField()
+                                //                .content.applyCast({() => content})
+                                //                .content.update({x => content = x; Try(p.write(content.toInt))})
+                                //        }})
+                                //    .add({_ => _ => 
+                                //        {case (p : UI.iConstructionData, n : Object) if (Reflection.isModule(n)) => 
+                                //            val panel = TwoColumnPanel()
+                                //            
+                                //            val iterator = Reflection.fields(n)
+                                //            iterator
+                                //                .foreach(
+                                //                    {f =>
+                                //                        Try(
+                                //                            {
+                                //                                val name = 
+                                //                                    {
+                                //                                        val result = UI.DefaultName(f.name())
+                                //                                        if (result == "") f.name() else result
+                                //                                    }
+                                //
+                                //                                panel.add(name, 
+                                //                                    {
+                                //                                        val q = UI.ConstructionData(n, name, {() => f()}, {f(_)})
+                                //                                        val result = UI.DefaultComponent((q, f()))
+                                //                                        //System.out.println("     component: " + result.getClass.getName)
+                                //                                        result
+                                //                                    })
+                                //                            })
+                                //                    })
+                                //            
+                                //            
+                                //            panel
+                                //        }})
+                                //    .add({_ => _ => 
+                                //        {case (p : UI.iConstructionData, n : Text.Interface) => 
+                                //            TextField()
+                                //                .minimalWidth(200)
+                                //                .content.applyCast(n.apply _)
+                                //                .content.update(n.apply(_))
+                                //        }})
+                                //UI.DefaultComponent
+                                //    .add({_ => _ => 
+                                //        {case (p : UI.iConstructionData, n : Password.Interface) => 
+                                //            PasswordField()
+                                //                .minimalWidth(200)
+                                //                .content.applyCast(n.apply _)
+                                //                .content.update(n.apply(_))
+                                //        }})
+                                //UI.DefaultComponent
+                                //    .add({_ => _ => 
+                                //        {case (p : UI.iConstructionData, n : FileName.Interface) =>
+                                //            val borderPanel = BorderPanel()
+                                //            def openFileDialog() : Unit = 
+                                //                {
+                                //                    val fileChooser = new javax.swing.JFileChooser()
+                                //                    Try({fileChooser.setSelectedFile(new java.io.File(n()))})
+                                //                    if (fileChooser.showOpenDialog(borderPanel.component) == javax.swing.JFileChooser.APPROVE_OPTION)
+                                //                        {
+                                //                            n(fileChooser.getSelectedFile.getAbsolutePath)
+                                //                        }
+                                //                }
+                                //            borderPanel
+                                //                .keyAction(VK_F2, openFileDialog _)
+                                //                .center(
+                                //                    TextField()
+                                //                        .content.applyCast(n.apply _)
+                                //                        .content.update(n.apply(_))
+                                //                        .backColor({() => 
+                                //                            TryCatch(
+                                //                                {
+                                //                                    //System.out.println("Color: " + (n(), new java.io.File(n()).exists))
+                                //                                    if (new java.io.File(n()).exists || n().size == 0) Some(java.awt.Color.WHITE) else Some(java.awt.Color.RED)
+                                //                                }, Some(java.awt.Color.RED))}))
+                                //                .east(
+                                //                    Button("...")
+                                //                        .onClick(openFileDialog _))
+                                //                .minimalWidth(200)
+                                //        }})
+                                //
+                                //
                             // Persistance
                                 Persistance.DefaultName
                                     .add({_ => _ => 
@@ -201,32 +201,167 @@ package nl.datakneder.run
                         //Password.start()
                         //if (PasswordVault.Settings.edit()) PasswordVault.Settings.save()
       
+                        trait iText
+                            extends iPropertyValue[String]
+                        class Text(_x : String)
+                            extends PropertyValue[String](_x)
+                            with iText
+                                {
+                                    read({x => Some(x)})
+                                    write({x => x})
+                                }
+                            
+                        implicit def InjectText(_owner : iProperty) = 
+                            new Object 
+                                {
+                                    def Text(_x : String) : iText = 
+                                        {
+                                            val result = new Text(_x)
+                                            result.parent(_owner)
+                                            _owner.children.add(result)
+                                            result
+                                        }
+                                    def Text(_x : String, _v : String) : iText = Text(_x)(_v) 
+                                }
+
+                        trait iNumber
+                            extends iPropertyValue[Int]
+                        class Number(_x : String)
+                            extends PropertyValue[Int](_x)
+                            with iNumber
+                                {
+                                    read({x => Some(x.toInt)})
+                                    write({x => x.toString})
+                                }
+                            
+                        implicit def InjectNumber(_owner : iProperty) = 
+                            new Object 
+                                {
+                                    def Number(_x : String) : iNumber = 
+                                        {
+                                            val result = new Number(_x)
+                                            result.parent(_owner)
+                                            _owner.children.add(result)
+                                            result
+                                        }
+                                    def Number(_x : String, _v : Int) : iNumber = Number(_x)(_v) 
+                                }
+                                
+                        // Setup
+                            // UI
+                                UI.DefaultName
+                                    .add({_ => _ => 
+                                        {case n : iProperty => 
+                                            n.caption()
+                                        }})
+                                UI.DefaultComponent
+                                    .add({_ => _ => 
+                                        {case p : iProperty => 
+                                            //System.out.println("Name (iProperty) = %s".format(p.caption()))
+                                            val panel = TwoColumnPanel()
+                                            
+                                            val iterator = p.children().iterator
+                                            iterator
+                                                .foreach(
+                                                    {f =>
+                                                        val name = UI.DefaultName(f)
+                                                        if (name == "") f.caption() else name
+                                                        UI.DefaultComponent(f) match
+                                                            {
+                                                                case c : iAddableComponent =>
+                                                                    panel.add(name, c)
+                                                                case _ =>
+                                                                    panel.add(name, Label("No component defined."))      
+                                                            }
+                                                    })
+                                            panel
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : iText => 
+                                            //System.out.println("Name (Text) = %s".format(n.caption()))
+                                            TextField()
+                                                .minimalWidth(200)
+                                                .content.applyCast(n.apply _)
+                                                .content.update(n.apply(_))
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : iNumber => 
+                                            //System.out.println("Name (Text) = %s".format(n.caption()))
+                                            TextField()
+                                                .minimalWidth(200)
+                                                .content.applyCast({() => n.stringValue().getOrElse("")})
+                                                .content.update(n.stringValue(_))
+                                        }})
+                            // Persistance
+                                Persistance.DefaultName
+                                    .add({_ => _ => 
+                                        {case n  => 
+                                            TryCatch(n.getClass.getName.cutFrom(".",-1), "UnknownClass")
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : iProperty => 
+                                            n.caption()
+                                        }})
+                                Persistance.DefaultXML
+                                    .add({_ => _ => 
+                                        {case n : iProperty => 
+                                            {<p>{
+                                                n.children().map({c => Persistance.DefaultXML(c)})
+                                            }</p>}.copy(label = Persistance.DefaultName(n))
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : iPropertyValue[_] => 
+                                            {<p>{
+                                                n.children().map({c => Persistance.DefaultXML(c)})
+                                            }{new scala.xml.Text(n.stringValue().getOrElse(""))}</p>}.copy(label = Persistance.DefaultName(n))
+                                    }})
+                                Persistance.LoadXML
+                                    .add({_ => _ => 
+                                        {case x =>
+                                            System.out.println("Could not resolve: " + x)
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (_f : iProperty, _xml : scala.xml.Node) =>
+                                            _f.children()
+                                                .foreach(
+                                                    {p => 
+                                                        _xml.child
+                                                            .filter(_.label == p.caption())
+                                                            .foreach({n => Persistance.LoadXML(p, n)})
+                                                    })
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (_f : iPropertyValue[_], _xml : scala.xml.Node) =>
+                                            Try(
+                                                {
+                                                    val x = _xml.child.cast({case p : scala.xml.Atom[_] => p.text}).foldLeft("")(_ + _)
+                                                    System.out.println("Loading %s = %s".format(_f.caption(), x))
+                                                    _f.stringValue(x)
+                                                })
+                                        }})
                         object Settings
                             extends Tuple("Settings")
                                 {
-                                    val name = this.PropertyValue("Name", "Harry")
-                                    val age : Int = 20
+                                    val name = this.Text("Name", "Harry")
+                                    val age = this.Number("Age", 20)
                                     object Font
                                         extends Tuple("Font")
                                             {
-                                                val name = this.PropertyValue("Name", "Comic sans serif")
-                                                val size  = 20
+                                                val name = this.Text("Name", "Comic sans serif")
+                                                val size = this.Number("Age", 20)
                                             }
                                     //Font.parent(Some(this))
                                 }
-                        Settings.Font
+                        //Settings.Font
       
-                        System.out.println("Settings: " + Settings)
-                        System.out.println("Settings.Font.name: " + Settings.Font.name.parents.map(_.caption()).mkString("-"))
-                        System.out.println("Settings.name: " + Settings.name.parents.map(_.caption()).mkString("-"))
-                        System.out.println(Settings.name.parent())
-                        System.exit(0)
                         
-                        //System.out.println("Font: " + Settings.Font)
-                        //Reflection.fields(Settings)
-                        //    .foreach({f => System.out.println("%s: %s".format(f.name, f().toString))})
-                        //System.out.println("--------------------")
+                        
+                        System.out.println("Settings: " + Settings)
+                        System.out.println("Settings.Font.name: " + Settings.Font.name.parents.reverse.map(_.caption()).mkString("-"))
+                        System.out.println("Settings.Font.age: " + Settings.Font.size.parents.reverse.map(_.caption()).mkString("-"))
+
                         Settings.load
+                        System.out.println("Settings.name = %s".format(Settings.name()))
                         if (Settings.edit()) Settings.save
                     }
             }
