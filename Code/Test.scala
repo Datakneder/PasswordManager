@@ -1,5 +1,6 @@
 package nl.datakneder.run
     {
+        import scala.language.implicitConversions
         import scala.language.reflectiveCalls
         import nl.datakneder.projects.PasswordVault._
         import nl.datakneder.temp.UI._
@@ -199,17 +200,74 @@ package nl.datakneder.run
                         //Password.start()
                         //if (PasswordVault.Settings.edit()) PasswordVault.Settings.save()
       
-                        object Settings
+                        
+                        
+                        trait iProperty
                             {
-                                val name : String = "Harry"
-                                val age : Int = 20
-                                object Font
-                                    {
-                                        val name = "Comic sans serif"
-                                        val size  = 20
-                                    }
+                                private var __caption : String = ""
+                                def caption() : String = __caption
+                                def caption(_x : String) = __caption = _x
+                                private def initParent(implicit currentProperty : Option[iProperty]) : Option[iProperty] = currentProperty
+                                private var __parent : Option[iProperty] = None
+                                def parent() : Option[iProperty] = __parent
+                                def parent(_x : Option[iProperty]) = __parent = _x
+                                def parents() : List[iProperty] = parent().map(_.parents()).getOrElse(List()) ++ List(this)
+                                //System.out.println("Created %s.parent = %s".format(caption(), parent().toString))
                             }
+                        
+                        
+                            
+                        class TupleSample(_c : String)
+                            extends iProperty
+                                {__sample => 
+                                    class Tuple(_c : String)
+                                        extends TupleSample(_c)
+                                            {
+                                                parent(Some(__sample))
+                                            }
+                                    caption(_c)
+                                }
+                        class Tuple(_c : String)
+                            extends TupleSample(_c)
+                            
+                        class MyText(_c : String, _x : String)
+                            extends Tuple(_c)
+                                {
+                                    private var __value : String = _x
+                                    def apply() : String = __value
+                                    def apply(_x : String) = __value = _x
+                                }
+                        implicit def InjectMyText(_owner : iProperty) =
+                            new Object
+                                {
+                                    //def MyText(_x : String) : MyText = MyText(_x, "")
+                                    def xMyText(_x : String, _v : String) : MyText = 
+                                        {
+                                            val result = new MyText(_x, _v)
+                                            result.parent(Some(_owner))
+                                            result
+                                        }
+                                }
+                        
+                        object Settings
+                            extends Tuple("Settings")
+                                {
+                                    val name = this.xMyText("Name", "Harry")
+                                    val age : Int = 20
+                                    object Font
+                                        extends Tuple("Font")
+                                            {
+                                                val name = this.xMyText("Name", "Comic sans serif")
+                                                val size  = 20
+                                            }
+                                    //Font.parent(Some(this))
+                                }
                         Settings.Font
+      
+                        System.out.println("Settings: " + Settings)
+                        System.out.println("Owner: " + Settings.Font.name.parents.map(_.caption).mkString("-"))
+                        System.exit(0)
+                        
                         //System.out.println("Font: " + Settings.Font)
                         //Reflection.fields(Settings)
                         //    .foreach({f => System.out.println("%s: %s".format(f.name, f().toString))})
