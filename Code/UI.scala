@@ -52,7 +52,7 @@ package nl.datakneder.temp
                                     
                                 }
                         object DefaultPanel
-                            extends Convertor[iAddableComponent]({() => Label("Has no panel defined.")})
+                            extends Convertor[iAddableComponent]({() => null})
                                 {
                                     
                                 }
@@ -70,38 +70,19 @@ package nl.datakneder.temp
                             {
                                 import nl.datakneder.temp.Reflection._
                                 
-                                DefaultComponent(_x) match
+                                DefaultPanel(_x) match
                                     {
                                         case p : iAddableComponent =>
                                             p
                                         case _ =>
-                                            null
+                                            DefaultComponent(_x) match
+                                                {
+                                                    case p : iAddableComponent =>
+                                                        p
+                                                    case _ =>
+                                                        null
+                                                }
                                     }
-                                
-                                //val panel = TwoColumnPanel()
-                                //
-                                //val iterator = Reflection.fields(_x, _names :_*)
-                                //iterator
-                                //    .foreach(
-                                //        {f =>
-                                //            Try(
-                                //                {
-                                //                    val name = 
-                                //                        {
-                                //                            val result = DefaultName(f.name())
-                                //                            if (result == "") f.name() else result
-                                //                        }
-                                //
-                                //                    panel.add(name, 
-                                //                        {
-                                //                            val p = ConstructionData(_x, name, {() => f()}, {f(_)})
-                                //                            val result = DefaultComponent((p, f()))
-                                //                            //System.out.println("     component: " + result.getClass.getName)
-                                //                            result
-                                //                        })
-                                //                })
-                                //        })
-                                //panel
                             }
                         def edit(_x : Object, _names : String*) : Boolean = 
                             {

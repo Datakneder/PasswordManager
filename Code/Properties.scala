@@ -97,6 +97,23 @@ package nl.datakneder.temp
                                 }
                             def default(_x : A) : this.type = Reflect(__default = Some(_x), this)
                         }
+                case class Constructor[A](name : String, construct : () => A)
+                trait iPropertyCollection[A <: iProperty]
+                    extends iProperty
+                        {
+                            private var __value = new VariableList[A, this.type](this)
+                            def apply() : List[A] = __value()
+                            def add(_x : Any) : this.type = 
+                                Reflect(
+                                    {
+                                        Try(if (_x != null) __value.add(_x.asInstanceOf[A]))
+                                    }, this)
+                            def remove(_x : A) : this.type = __value.remove(_x)
+                            def clear() : this.type = __value.clear()
+                            def size() : Int = __value.size
+                            val display = new Variable[A => String, this.type]({_.toString}, this)
+                            val construction = new VariableList[Constructor[_], this.type](this)
+                        }
                 class TupleTemplate(_x : String)
                     extends iProperty
                         {__template =>
@@ -106,10 +123,14 @@ package nl.datakneder.temp
                                     {
                                         parent(__template)
                                         __template.children.add(this)
+                                        //System.out.println("Inner tuple %s.".format(_x))
                                     }
                         }
                 class Tuple(_x : String)
                     extends TupleTemplate(_x)
+                        {
+                            //System.out.println("Outer tuple %s.".format(_x))
+                        }
                 class PropertyValue[A](_x : String)
                     extends iPropertyValue[A]
                         {
@@ -126,6 +147,22 @@ package nl.datakneder.temp
                                     result
                                 }
                             def PropertyValue[A](_x : String, _v : A) : iPropertyValue[A] = PropertyValue(_x)(_v)
+                        }
+                class Collection[A <: iProperty](_x : String)
+                    extends Tuple(_x)
+                    with iPropertyCollection[A]
+                        {
+                        }
+                implicit def InjectPropertyCollection(_owner : iProperty) = 
+                    new Object 
+                        {
+                            def Collection[A <: iProperty](_x : String) : iPropertyCollection[A] = 
+                                {
+                                    val result = new Collection[A](_x)
+                                    result.parent(Some(_owner))
+                                    _owner.children.add(result)
+                                    result
+                                }
                         }
             }
     }

@@ -1,8 +1,24 @@
 <Settings>
-    <Name>Annie</Name>
-    <Age>1</Age>
+    <Name>Henk</Name>
+    <Age>Onbekend</Age>
+    <Locations>
+        <content>
+            <Location>
+                <Name>Henk</Name>
+                <URL>https://henk.nl/login</URL>
+            </Location>
+            <Location>
+                <Name>Pieter</Name>
+                <URL>www.pieter.nl/login</URL>
+            </Location>
+            <Location>
+                <Name>Herman</Name>
+                <URL>www.herman.nl\login</URL>
+            </Location>
+        </content>
+    </Locations>
     <Font>
-        <Name>Henk</Name>
-        <Age>2</Age>
+        <Name>Comic sans serif</Name>
+        <Age>20</Age>
     </Font>
 </Settings>

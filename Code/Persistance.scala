@@ -55,6 +55,12 @@ package nl.datakneder.temp
                                 {
                                     
                                 }
+                                
+                        object ConstructFromXML
+                            extends Convertor[Any]({() => null})
+                                {
+                                    
+                                }
                         object LoadXML
                             extends Convertor[Unit]({() => })
                                 {
