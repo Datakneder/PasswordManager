@@ -101,7 +101,7 @@ package nl.datakneder.temp
                 trait iPropertyCollection[A <: iProperty]
                     extends iProperty
                         {
-                            private var __value = new VariableList[A, this.type](this)
+                            private val __value = new VariableList[A, this.type](this)
                             def apply() : List[A] = __value()
                             def add(_x : Any) : this.type = 
                                 Reflect(
@@ -113,6 +113,38 @@ package nl.datakneder.temp
                             def size() : Int = __value.size
                             val display = new Variable[A => String, this.type]({_.toString}, this)
                             val construction = new VariableList[Constructor[_], this.type](this)
+                            def stringList() : List[String] = __value().map(display()(_))
+                            def selection() : iPropertySelection = 
+                                {
+                                    val result = new iPropertySelection {}
+                                    result.collection(Some(this))
+                                    result
+                                }
+                        }
+                trait iPropertySelection
+                    extends iProperty
+                        {
+                            private val __value = new VariableList[String, this.type](this)
+                            def apply() : List[String] = __value()
+                            def add(_x : String) : this.type = 
+                                Reflect(
+                                    {
+                                        Try(if (_x != null) __value.add(_x))
+                                    }, this)
+                            def remove(_x : String) : this.type = __value.remove(_x)
+                            def clear() : this.type = __value.clear()
+                            def size() : Int = __value.size
+                            def moveUp() : this.type =
+                                Reflect(
+                                    {
+                                        System.out.println("Move up.")
+                                    }, this)
+                            def moveDown() : this.type =
+                                Reflect(
+                                    {
+                                        System.out.println("Move down.")
+                                    }, this)
+                            var collection = new Variable[Option[iPropertyCollection[_]], this.type](None, this)
                         }
                 class TupleTemplate(_x : String)
                     extends iProperty

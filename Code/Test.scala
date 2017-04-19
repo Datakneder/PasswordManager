@@ -79,10 +79,11 @@ package nl.datakneder.run
                                         }})
                                 UI.DefaultPopupMenu
                                     .add({_ => _ => 
-                                        {case p : iPropertyCollection[_] => 
+                                        {case p : iPropertySelection => 
                                             //System.out.println("Name (iProperty) = %s".format(p.caption()))
                                             var result = List[iAddableComponent]()
-                                            p.construction()
+                                            val collection = p.collection().get
+                                            collection.construction()
                                                 .foreach(
                                                     {c => 
                                                         result = result :+ 
@@ -93,10 +94,13 @@ package nl.datakneder.run
                                                                         
                                                                         if (n.edit())
                                                                             {
-                                                                                p.add(n)
+                                                                                collection.add(n)
                                                                             }
                                                                     })
                                                     })
+                                            result = result :+ Separator()
+                                            result = result :+ MenuItem("Move Up").onClick({() => p.moveUp()})
+                                            result = result :+ MenuItem("Move Down").onClick({() => p.moveDown()})
                                             result
                                         }})
                                 UI.DefaultComponent
@@ -122,13 +126,19 @@ package nl.datakneder.run
                                             panel
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertyCollection[_] => 
+                                        {case n : iPropertySelection =>
+                                            val collection = n.collection().get
                                             System.out.println("Name (ListBox) = %s".format(n.caption()))
-                                            n().filter(_ != null).foreach({p => System.out.println("   " + n.display()(p))})
+                                            collection.stringList.foreach({p => System.out.println("   " + p)})
+                                            
                                             ListBox()
-                                                .items({() => n().map(n.display()(_) + " ")})
+                                                .items({() => collection.stringList()})
                                                 .popup(UI.DefaultPopupMenu(n))
                                                 //.content.update()
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : iPropertyCollection[_] =>
+                                            UI.DefaultComponent(n.selection())
                                         }})
                                     .add({_ => _ => 
                                         {case n : iText => 
