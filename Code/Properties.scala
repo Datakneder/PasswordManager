@@ -120,12 +120,14 @@ package nl.datakneder.temp
                                     result.collection(Some(this))
                                     result
                                 }
+                            def swap(_i : Int, _j : Int) : this.type = Reflect({__value(Lists.swap(_i, _j, __value()))}, this)
                         }
                 trait iPropertySelection
                     extends iProperty
                         {
                             private val __value = new VariableList[String, this.type](this)
                             def apply() : List[String] = __value()
+                            def apply(_x : List[String]) : this.type = Reflect(__value(_x), this)
                             def add(_x : String) : this.type = 
                                 Reflect(
                                     {
@@ -137,12 +139,44 @@ package nl.datakneder.temp
                             def moveUp() : this.type =
                                 Reflect(
                                     {
-                                        System.out.println("Move up.")
+                                        __value()
+                                            .take(1)
+                                            .foreach(
+                                                {s =>
+                                                    System.out.println("Selected: '%s'".format(s))
+                                                    collection()
+                                                        .foreach(
+                                                            {c => 
+                                                                //System.out.println("Items = (%s)".format(c.stringList().map({x => "'" + x.trim + "'"}).mkString(", ")))
+                                                                val i = c.stringList().map(_.trim).indexOf(s)
+                                                                if (i > 0) 
+                                                                    {
+                                                                        c.swap(i, i-1)
+                                                                    }
+                                                            })
+                                                })
+                                        //System.out.println("Move up.")
                                     }, this)
                             def moveDown() : this.type =
                                 Reflect(
                                     {
-                                        System.out.println("Move down.")
+                                        __value()
+                                            .take(1)
+                                            .foreach(
+                                                {s =>
+                                                    System.out.println("Selected: '%s'".format(s))
+                                                    collection()
+                                                        .foreach(
+                                                            {c => 
+                                                                //System.out.println("Items = (%s)".format(c.stringList().map({x => "'" + x.trim + "'"}).mkString(", ")))
+                                                                val i = c.stringList().map(_.trim).indexOf(s)
+                                                                if (i < c().size -1) 
+                                                                    {
+                                                                        c.swap(i, i+1)
+                                                                    }
+                                                            })
+                                                })
+                                        //System.out.println("Move up.")
                                     }, this)
                             var collection = new Variable[Option[iPropertyCollection[_]], this.type](None, this)
                         }

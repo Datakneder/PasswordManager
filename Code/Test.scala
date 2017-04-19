@@ -99,8 +99,8 @@ package nl.datakneder.run
                                                                     })
                                                     })
                                             result = result :+ Separator()
-                                            result = result :+ MenuItem("Move Up").onClick({() => p.moveUp()})
-                                            result = result :+ MenuItem("Move Down").onClick({() => p.moveDown()})
+                                            result = result :+ MenuItem("Move Up").onClick({() => p.moveUp()}).accelerator(ALT + VK_Up)
+                                            result = result :+ MenuItem("Move Down").onClick({() => p.moveDown()}).accelerator(ALT + VK_Down)
                                             result
                                         }})
                                 UI.DefaultComponent
@@ -134,7 +134,8 @@ package nl.datakneder.run
                                             ListBox()
                                                 .items({() => collection.stringList()})
                                                 .popup(UI.DefaultPopupMenu(n))
-                                                //.content.update()
+                                                .content({() => n()})
+                                                .content.update({x => n(x)})
                                         }})
                                     .add({_ => _ => 
                                         {case n : iPropertyCollection[_] =>

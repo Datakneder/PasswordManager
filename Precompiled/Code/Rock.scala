@@ -9,7 +9,7 @@ package nl.datakneder.core.UI.Rock
         import nl.datakneder.core.Data.Framework.KeyDefinitions._
             
         object Framework
-            extends Template_FrameworkPackage("Rock", 1490961825837L /*CompileDate*/)
+            extends Template_FrameworkPackage("Rock", 1492638915032L /*CompileDate*/)
                 {
                     // Editor
                         //implicit def InjectEdit(_x : Object) =
@@ -727,7 +727,7 @@ package nl.datakneder.core.UI.Rock
         import nl.datakneder.core.Data.Framework.KeyDefinitions._
         
         object Implementation
-            extends Template_ImplementationPackage("Rock", 1490961825837L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
+            extends Template_ImplementationPackage("Rock", 1492638915032L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
                 {
                     val Framework = nl.datakneder.core.UI.Rock.Framework
                   
@@ -1064,8 +1064,9 @@ package nl.datakneder.core.UI.Rock
                                                             l(0)()
                                                             KeyManager.clearNonModifiers()
                                                         }
-                                                    if (KeyManager.noKeysDown()) 
+                                                    if (KeyManager.noKeysDown() && KeyManager.currentSequence().toString.size > 0) 
                                                         {
+                                                            //System.out.println("Keys = '%s'".format(KeyManager.currentSequence().toString))
                                                             getList({k => k.exactMatch(KeyManager.currentSequence())})
                                                                 .iterator
                                                                 .filter(
@@ -3333,7 +3334,7 @@ package nl.datakneder.core.UI.Rock
         import nl.datakneder.core.Acid.Framework.Acid
         
         object Test
-            extends Template_TestPackage("Rock", 1490961825837L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
+            extends Template_TestPackage("Rock", 1492638915032L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
                 {
                     class Rock()
                         extends nl.datakneder.core.Acid.Implementation.TestSet.Class("Rock")

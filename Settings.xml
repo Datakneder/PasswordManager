@@ -4,16 +4,16 @@
     <Locations>
         <content>
             <Location>
+                <Name>Herman</Name>
+                <URL>www.herman.nl\login</URL>
+            </Location>
+            <Location>
                 <Name>Henk</Name>
                 <URL>https://henk.nl/login</URL>
             </Location>
             <Location>
                 <Name>Pieter</Name>
                 <URL>www.pieter.nl/login</URL>
-            </Location>
-            <Location>
-                <Name>Herman</Name>
-                <URL>www.herman.nl\login</URL>
             </Location>
         </content>
     </Locations>
