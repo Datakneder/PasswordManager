@@ -84,7 +84,7 @@ package nl.datakneder.temp
                             {
                                 //System.out.println("Saving...")
                                 val xml = DefaultXML(_x)
-                                scala.xml.XML.save(DefaultName(_x) +".xml", xml.print)
+                                scala.xml.XML.save(DefaultName(_x) +".xml", xml)
                             }
                     }
                 def initialise() = 

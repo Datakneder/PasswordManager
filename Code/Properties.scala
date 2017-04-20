@@ -114,15 +114,15 @@ package nl.datakneder.temp
                             val display = new Variable[A => String, this.type]({_.toString}, this)
                             val construction = new VariableList[Constructor[_], this.type](this)
                             def stringList() : List[String] = __value().map(display()(_))
-                            def selection() : iPropertySelection = 
+                            def selection() : iPropertySelection[A] = 
                                 {
-                                    val result = new iPropertySelection {}
+                                    val result = new iPropertySelection[A] {}
                                     result.collection(Some(this))
                                     result
                                 }
                             def swap(_i : Int, _j : Int) : this.type = Reflect({__value(Lists.swap(_i, _j, __value()))}, this)
                         }
-                trait iPropertySelection
+                trait iPropertySelection[A <: iProperty]
                     extends iProperty
                         {
                             private val __value = new VariableList[String, this.type](this)
@@ -136,49 +136,59 @@ package nl.datakneder.temp
                             def remove(_x : String) : this.type = __value.remove(_x)
                             def clear() : this.type = __value.clear()
                             def size() : Int = __value.size
+                            val singleSelection = new Variable(false, this)
                             def moveUp() : this.type =
                                 Reflect(
                                     {
-                                        __value()
-                                            .take(1)
-                                            .foreach(
-                                                {s =>
-                                                    System.out.println("Selected: '%s'".format(s))
-                                                    collection()
+                                        collection() match 
+                                            {
+                                                case None => 
+                                                case Some(collection) =>
+                                                    selectedItems()
+                                                        .take(1)
                                                         .foreach(
-                                                            {c => 
-                                                                //System.out.println("Items = (%s)".format(c.stringList().map({x => "'" + x.trim + "'"}).mkString(", ")))
-                                                                val i = c.stringList().map(_.trim).indexOf(s)
-                                                                if (i > 0) 
-                                                                    {
-                                                                        c.swap(i, i-1)
-                                                                    }
+                                                            {p =>
+                                                                val i = collection().indexOf(p)
+                                                                if (i > 0) collection.swap(i, i-1)
                                                             })
-                                                })
-                                        //System.out.println("Move up.")
+                                            }
                                     }, this)
                             def moveDown() : this.type =
                                 Reflect(
                                     {
-                                        __value()
-                                            .take(1)
-                                            .foreach(
-                                                {s =>
-                                                    System.out.println("Selected: '%s'".format(s))
-                                                    collection()
+                                        collection() match 
+                                            {
+                                                case None => 
+                                                case Some(collection) =>
+                                                    selectedItems()
+                                                        .take(1)
                                                         .foreach(
-                                                            {c => 
-                                                                //System.out.println("Items = (%s)".format(c.stringList().map({x => "'" + x.trim + "'"}).mkString(", ")))
-                                                                val i = c.stringList().map(_.trim).indexOf(s)
-                                                                if (i < c().size -1) 
-                                                                    {
-                                                                        c.swap(i, i+1)
-                                                                    }
+                                                            {p =>
+                                                                val i = collection().indexOf(p)
+                                                                if (i < collection().size - 1) collection.swap(i, i+1)
                                                             })
-                                                })
-                                        //System.out.println("Move up.")
+                                            }
                                     }, this)
-                            var collection = new Variable[Option[iPropertyCollection[_]], this.type](None, this)
+                            var collection = new Variable[Option[iPropertyCollection[A]], this.type](None, this)
+                            def selectedItems() : List[A] = 
+                                {
+                                    collection() match 
+                                        {
+                                            case None => 
+                                                List[A]()
+                                            case Some(collection) =>
+                                                val l = collection.stringList().map(_.trim)
+                                                __value()
+                                                    .map(l.indexOf(_))
+                                                    .filter(_ >= 0)
+                                                    .map(collection()(_))
+                                        }
+                                }
+                            def removeFromCollection() : this.type = 
+                                Reflect(
+                                    {
+                                        selectedItems().foreach({i => collection().get.remove(i)})
+                                    }, this)
                         }
                 class TupleTemplate(_x : String)
                     extends iProperty

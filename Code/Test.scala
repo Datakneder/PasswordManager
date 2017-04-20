@@ -79,7 +79,7 @@ package nl.datakneder.run
                                         }})
                                 UI.DefaultPopupMenu
                                     .add({_ => _ => 
-                                        {case p : iPropertySelection => 
+                                        {case p : iPropertySelection[_] => 
                                             //System.out.println("Name (iProperty) = %s".format(p.caption()))
                                             var result = List[iAddableComponent]()
                                             val collection = p.collection().get
@@ -99,6 +99,11 @@ package nl.datakneder.run
                                                                     })
                                                     })
                                             result = result :+ Separator()
+                                            result = result :+ MenuItem("Delete").onClick({() => p.removeFromCollection()}).accelerator(ALT + VK_Delete)
+                                            result = result :+ Separator()
+                                            result = result :+ MenuItem("Edit").onClick({() => p.selectedItems().take(1).foreach(_.edit())}).accelerator(VK_F2)
+                                            result = result :+ Separator()
+                                            
                                             result = result :+ MenuItem("Move Up").onClick({() => p.moveUp()}).accelerator(ALT + VK_Up)
                                             result = result :+ MenuItem("Move Down").onClick({() => p.moveDown()}).accelerator(ALT + VK_Down)
                                             result
@@ -126,16 +131,32 @@ package nl.datakneder.run
                                             panel
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertySelection =>
+                                        {case n : iPropertySelection[_] =>
                                             val collection = n.collection().get
-                                            System.out.println("Name (ListBox) = %s".format(n.caption()))
-                                            collection.stringList.foreach({p => System.out.println("   " + p)})
+                                            //System.out.println("Name (ListBox) = %s".format(n.caption()))
+                                            n().foreach({p => System.out.println("   " + p)})
                                             
-                                            ListBox()
-                                                .items({() => collection.stringList()})
-                                                .popup(UI.DefaultPopupMenu(n))
-                                                .content({() => n()})
-                                                .content.update({x => n(x)})
+                                            if (n.singleSelection()) 
+                                                {
+                                                    
+                                                    ComboBox()
+                                                        .items({() => collection.stringList()})
+                                                        .popup(UI.DefaultPopupMenu(n))
+                                                        .content(
+                                                            {() =>
+                                                                //System.out.println("Content: '%s'".format(n().nextOrElse("")))
+                                                                n().nextOrElse("")
+                                                            })
+                                                        .content.update({x => n(List(x))})
+                                                } 
+                                            else 
+                                                {
+                                                    ListBox()
+                                                        .items({() => collection.stringList()})
+                                                        .popup(UI.DefaultPopupMenu(n))
+                                                        .content({() => n()})
+                                                        .content.update({x => n(x)})
+                                                }
                                         }})
                                     .add({_ => _ => 
                                         {case n : iPropertyCollection[_] =>
@@ -185,7 +206,13 @@ package nl.datakneder.run
                                             {<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
                                             }{new scala.xml.Text(n.stringValue().getOrElse(""))}</p>}.copy(label = Persistance.DefaultName(n))
-                                    }})
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : iPropertySelection[_] => 
+                                            {<p>{
+                                                n.children().map({c => Persistance.DefaultXML(c)})
+                                                    }<content>{n().map({s => <item>{s}</item>})}</content></p>}.copy(label = Persistance.DefaultName(n))
+                                        }})
                                 Persistance.LoadXML
                                     .add({_ => _ => 
                                         {case x =>
@@ -216,7 +243,33 @@ package nl.datakneder.run
                                                     {n => 
                                                         _f.clear()
                                                         n.child
-                                                            .foreach({n => _f.add(Persistance.ConstructFromXML(_f, n))})
+                                                            .foreach(
+                                                                {n =>
+                                                                    //System.out.println("Trying to construct: %s".format(n.label))
+                                                                    _f.add(Persistance.ConstructFromXML(_f, n))
+                                                                })
+                                                    })
+                                        }})
+                                    .add({_ => _ => 
+                                        {case (_f : iPropertySelection[_], _xml : scala.xml.Node) =>
+                                            _f.children()
+                                                .foreach(
+                                                    {p => 
+                                                        _xml.child
+                                                            .filter(_.label == p.caption())
+                                                            .foreach({n => Persistance.LoadXML(p, n)})
+                                                    })
+                                            _xml.child
+                                                .filter(_.label == "content")
+                                                .foreach(
+                                                    {n => 
+                                                        _f.clear()
+                                                        n.child
+                                                            .foreach(
+                                                                {n =>
+                                                                    //System.out.println("Trying to construct: %s".format(n.label))
+                                                                    _f.add(n.child.iterator.cast({case p : scala.xml.Atom[_] => p.text}).foldLeft("")(_ + _))
+                                                                })
                                                     })
                                         }})
                                     .add({_ => _ => 
@@ -236,29 +289,29 @@ package nl.datakneder.run
                                                     Persistance.LoadXML(result, _xml)
                                                     result
                                             }})
+                                        .add({_ => _ => 
+                                            {case (_, _xml : scala.xml.Node) if (_xml.label == "Data") =>
+                                                    System.out.println("Constructing Data.")
+                                                    val result = new PasswordData()
+                                                    Persistance.LoadXML(result, _xml)
+                                                    result
+                                            }})
                         object Settings
                             extends Tuple("Settings")
                                 {
                                     val name = this.Text("Name", "Harry")
                                     val age = this.Number("Age", 20)
-                                    val locations = this.Collection[Location]("Locations")
-                                    locations.display({n => n.name()})
-                                    locations.construction.add(Constructor("Add Location", {() => new Location()}))
-                                    locations.add(
-                                        {
-                                            val result = new Location
-                                            result.name("Henk")
-                                            result.url("https://henk.nl/login")
-                                            result
-                                        })
-                                    object Font
-                                        extends Tuple("Font")
-                                            {
-                                                val name = this.Text("Name", "Comic sans serif")
-                                                val size = this.Number("Age", 20)
-                                            }
-                                    Font
+                                    val data = this.Collection[PasswordData]("Data")
+                                    data.display({n => n.name()})
+                                    data.construction.add(Constructor("Add Data", {() => new PasswordData()}))
+                                    val location = data.selection()
+                                    location.caption("Location")
+                                    location.singleSelection(true)
+                                    location.parent(this)
+                                    children.add(location)
+                                    
                                 }
+                        System.out.println("Settings.location: " + Settings.location.parents.map(_.caption()).mkString("-"))
                         class Location
                             extends Tuple("Location")
                                 {
@@ -268,18 +321,18 @@ package nl.datakneder.run
                         class PasswordData
                             extends Tuple("Data")
                                 {
-                                    val mandatory = this.Text("Mandatory", "")
+                                    val name = this.Text("Name","")
+                                    val mandatory = this.Text("Mandatory", "\\w\\d")
                                     val alphabetPattern = this.Text("Alphabet", "")
                                     val user = this.Text("User","")
                                     val key = this.Text("Key","")
                                     val size = this.Number("Size",40)
-                                    //val locations = this.Collection("Locations")
+                                    val locations = this.Collection[Location]("Locations")
+                                    locations.display({n => n.name()})
+                                    locations.construction.add(Constructor("Add Location", {() => new Location()}))
                                 }
-                        System.out.println("Settings.locations.size = %d".format(Settings.locations.size))
                         Settings.load
-                        System.out.println("Settings.locations.size = %d".format(Settings.locations.size))
-                        System.out.println("    name = " + Settings.locations()(0).name())
-                        System.out.println("    url = " + Settings.locations()(0).url())
+                        //System.out.println(Settings.location.selectedItems.take(1))
                         if (Settings.edit()) Settings.save
                     }
             }
