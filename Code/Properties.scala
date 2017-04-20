@@ -2,14 +2,16 @@ package nl.datakneder.temp
     {
         import scala.language.implicitConversions
         import nl.datakneder.core.Utils.Framework._
+        import nl.datakneder.temp.Calculation._
         
         object Properties
             {
-                class Variable[A, B](_n : A, _owner : B)
+                class Variable[A, B](_n : () => A, _owner : B)
                     {
-                        private var __value : A = _n
-                        def apply() : A = __value
-                        def apply(_x : A) : B = 
+                        private var __value : () => A = _n
+                        def apply() : A = __value()
+                        def apply(_x : A) : B = apply({() => _x}) 
+                        def apply(_x : () => A) : B = 
                             {
                                 __value = _x
                                 _owner
@@ -42,7 +44,7 @@ package nl.datakneder.temp
                     }
                 trait iProperty
                     {
-                        val caption = new Variable("", this)
+                        val caption = new Variable({() => ""}, this)
                         val parent = new OptionalVariable[iProperty, iProperty](this)
                         def parents() : List[iProperty] = parents(true)
                         def parents(_x : Boolean) : List[iProperty] = 
@@ -54,48 +56,55 @@ package nl.datakneder.temp
                     }
                 trait iPropertyValue[A]
                     extends iProperty
+                    with iHasCalculation[A]
                         {
-                            private var __stringValue : Option[String] = None
-                            def stringValue() : Option[String] = 
-                                {
-                                    if (__stringValue == None && __value != None)
-                                        {
-                                            __stringValue = TryCatch(Some(__write(__value.get)),None)
-                                            System.out.println("$s.stringValue is set to %s.".format(caption(), __stringValue.toString))
-                                        }
-                                    __stringValue
-                                }
+                            private val __inputString = new Calculation[Option[String]]({_ => None})
+                            private val __inputValue = new Calculation[Option[A]]({_ => None})
+                            private val __useString = new Calculation[Boolean]({_ => true})
+                            private val __read = new Calculation[String => Option[A]]({_ => {_ => None}})
+                            private val __write = new Calculation[A => String]({_ => {_.toString}})
+                            private var __default = new Calculation[Option[A]]({_ => None})
+                            
+                            private val __value =
+                                new Calculation[Option[A]](
+                                    {n => 
+                                        if (__useString(n)) 
+                                            TryCatch({__read(n)(__inputString(n).get)}, None) 
+                                        else 
+                                            __inputValue(n)
+                                    }).dependencies(__inputString, __inputValue, __useString, __read)
+                            private val __outputString = 
+                                new Calculation[Option[String]](
+                                    {n => 
+                                        if (__useString(n)) 
+                                            __inputString() 
+                                        else 
+                                            TryCatch(Some(__write()(__value().get)), None) 
+                                    }).dependencies(__inputString, __value, __useString, __write)
+                            private val __outputValue = new Calculation[A]({n => __value().getOrElse(__default().get)}).dependencies(__value, __default)
+                            val Calculation = __outputValue
+                            
+                            def stringValue() : Option[String] = __outputString()
                             def stringValue(_x : Option[String]) : this.type = 
                                 Reflect(
                                         {
-                                            __stringValue = _x
-                                            __value = None
+                                            __inputString({_ => _x})
+                                            __useString({_ => true})
                                         }, this)
                             def stringValue(_x : String) : this.type = stringValue(Some(_x))
-                            private var __value : Option[A] = None
-                            def value() : Option[A] = __value
+                            def value() : Option[A] = __value()
                             def apply(_x : A) : this.type = 
                                 Reflect(
                                     {
-                                        __value = Some(_x)
-                                        __stringValue = None
+                                        __inputValue({_ => Some(_x)})
+                                        __useString({_ => false})
                                     }, this)
                             
-                            private var __default : Option[A] = None
-                            private var __read : String => Option[A] = {_ => None}
-                            def read(_x : String => Option[A]) : this.type = Reflect(__read = _x, this)
-                            private var __write : A => String = {x => x.toString}
-                            def write(_f : A => String) : this.type = Reflect(__write = _f, this)
-                            def default() : Option[A] = __default
-                            def apply() : A = 
-                                {
-                                    if (__value == None)
-                                        {
-                                            Try({__value = __read(__stringValue.get)})
-                                        }
-                                    __value.getOrElse(__default.get)
-                                }
-                            def default(_x : A) : this.type = Reflect(__default = Some(_x), this)
+                            def read(_x : String => Option[A]) : this.type = Reflect(__read({_ => _x}), this)
+                            def write(_f : A => String) : this.type = Reflect(__write({_ => _f}), this)
+                            def default() : Option[A] = __default()
+                            def apply() : A = __outputValue() 
+                            def default(_x : A) : this.type = Reflect(__default({_ => Some(_x)}), this)
                         }
                 case class Constructor[A](name : String, construct : () => A)
                 trait iPropertyCollection[A <: iProperty]
@@ -111,7 +120,7 @@ package nl.datakneder.temp
                             def remove(_x : A) : this.type = __value.remove(_x)
                             def clear() : this.type = __value.clear()
                             def size() : Int = __value.size
-                            val display = new Variable[A => String, this.type]({_.toString}, this)
+                            val display = new Variable[A => String, this.type]({() => {x => x.toString}}, this)
                             val construction = new VariableList[Constructor[_], this.type](this)
                             def stringList() : List[String] = __value().map(display()(_))
                             def selection() : iPropertySelection[A] = 
@@ -136,7 +145,7 @@ package nl.datakneder.temp
                             def remove(_x : String) : this.type = __value.remove(_x)
                             def clear() : this.type = __value.clear()
                             def size() : Int = __value.size
-                            val singleSelection = new Variable(false, this)
+                            val singleSelection = new Variable({() => false}, this)
                             def moveUp() : this.type =
                                 Reflect(
                                     {
@@ -169,7 +178,7 @@ package nl.datakneder.temp
                                                             })
                                             }
                                     }, this)
-                            var collection = new Variable[Option[iPropertyCollection[A]], this.type](None, this)
+                            var collection = new Variable[Option[iPropertyCollection[A]], this.type]({() => None}, this)
                             def selectedItems() : List[A] = 
                                 {
                                     collection() match 

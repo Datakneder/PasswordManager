@@ -111,7 +111,7 @@ package nl.datakneder.run
                                 UI.DefaultComponent
                                     .add({_ => _ => 
                                         {case p : iProperty => 
-                                            System.out.println("Name (iProperty) = %s".format(p.caption()))
+                                            //System.out.println("Name (iProperty) = %s".format(p.caption()))
                                             val panel = TwoColumnPanel()
                                             
                                             val iterator = p.children().iterator
@@ -134,7 +134,7 @@ package nl.datakneder.run
                                         {case n : iPropertySelection[_] =>
                                             val collection = n.collection().get
                                             //System.out.println("Name (ListBox) = %s".format(n.caption()))
-                                            n().foreach({p => System.out.println("   " + p)})
+                                            //n().foreach({p => System.out.println("   " + p)})
                                             
                                             if (n.singleSelection()) 
                                                 {
@@ -284,14 +284,14 @@ package nl.datakneder.run
                                     Persistance.ConstructFromXML
                                         .add({_ => _ => 
                                             {case (_, _xml : scala.xml.Node) if (_xml.label == "Location") =>
-                                                    System.out.println("Constructing Location.")
+                                                    //System.out.println("Constructing Location.")
                                                     val result = new Location()
                                                     Persistance.LoadXML(result, _xml)
                                                     result
                                             }})
                                         .add({_ => _ => 
                                             {case (_, _xml : scala.xml.Node) if (_xml.label == "Data") =>
-                                                    System.out.println("Constructing Data.")
+                                                    //System.out.println("Constructing Data.")
                                                     val result = new PasswordData()
                                                     Persistance.LoadXML(result, _xml)
                                                     result
@@ -311,7 +311,7 @@ package nl.datakneder.run
                                     children.add(location)
                                     
                                 }
-                        System.out.println("Settings.location: " + Settings.location.parents.map(_.caption()).mkString("-"))
+                        //System.out.println("Settings.location: " + Settings.location.parents.map(_.caption()).mkString("-"))
                         class Location
                             extends Tuple("Location")
                                 {
@@ -322,8 +322,8 @@ package nl.datakneder.run
                             extends Tuple("Data")
                                 {
                                     val name = this.Text("Name","")
-                                    val mandatory = this.Text("Mandatory", "\\w\\d")
-                                    val alphabetPattern = this.Text("Alphabet", "")
+                                    val mandatory = this.Text("Mandatory", "")
+                                    val alphabetPattern = this.Text("Alphabet", "\\w\\d")
                                     val user = this.Text("User","")
                                     val key = this.Text("Key","")
                                     val size = this.Number("Size",40)
