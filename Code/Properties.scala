@@ -93,6 +93,7 @@ package nl.datakneder.temp
                                         }, this)
                             def stringValue(_x : String) : this.type = stringValue(Some(_x))
                             def value() : Option[A] = __value()
+                            def value(_n : Long) : Option[A] = __value(_n)
                             def apply(_x : A) : this.type = 
                                 Reflect(
                                     {
@@ -104,32 +105,66 @@ package nl.datakneder.temp
                             def write(_f : A => String) : this.type = Reflect(__write({_ => _f}), this)
                             def default() : Option[A] = __default()
                             def apply() : A = __outputValue() 
+                            def apply(_n : Long) : A = __outputValue(_n) 
+                            def apply(_f : Long => Option[A]) : this.type = 
+                                Reflect(
+                                    {
+                                        __inputValue(_f)
+                                        __useString({_ => false})
+                                    }, this)
+                            def dependencies(_x : iHasCalculation[_]*) : this.type = Reflect({__inputValue.dependencies(_x :_*)}, this)
                             def default(_x : A) : this.type = Reflect(__default({_ => Some(_x)}), this)
+                            def isCalculated() : Boolean = !__useString() && __inputValue.dependencies().size > 0
                         }
                 case class Constructor[A](name : String, construct : () => A)
                 trait iPropertyCollection[A <: iProperty]
                     extends iProperty
+                    with iHasCalculation[List[A]]
                         {
-                            private val __value = new VariableList[A, this.type](this)
+                            private val __value =  new Calculation[List[A]]({_ => List[A]()})
+                            private val __display = new Calculation[A => String]({_ => {x => x.toString}})
+                            private val __stringList = new Calculation[List[String]]({_ => __value().map(__display()(_))}).dependencies(__value, __display)
+                            val Calculation = __value
+                            
                             def apply() : List[A] = __value()
+                            def apply(_n : Long) : List[A] = __value(_n)
+                            def apply(_f : Long => List[A]) : this.type = Reflect({__value(_f)}, this)
+                            def dependencies(_x : iHasCalculation[_]*) : this.type = Reflect({__value.dependencies(_x :_*)}, this) 
                             def add(_x : Any) : this.type = 
                                 Reflect(
                                     {
-                                        Try(if (_x != null) __value.add(_x.asInstanceOf[A]))
+                                        Try(
+                                            {
+                                                if (_x != null) 
+                                                    {
+                                                        val l = __value() :+ _x.asInstanceOf[A]
+                                                        __value({_ => l})
+                                                    }
+                                            })
                                     }, this)
-                            def remove(_x : A) : this.type = __value.remove(_x)
-                            def clear() : this.type = __value.clear()
-                            def size() : Int = __value.size
-                            val display = new Variable[A => String, this.type]({() => {x => x.toString}}, this)
+                            def remove(_x : A) : this.type = 
+                                Reflect(
+                                    {
+                                        val l = __value().filter(_ != _x)
+                                        __value({_ => l})
+                                    }, this)
+                            def clear() : this.type = Reflect(__value({_ => List[A]()}), this)
+                            def size() : Int = __value().size
                             val construction = new VariableList[Constructor[_], this.type](this)
-                            def stringList() : List[String] = __value().map(display()(_))
+                            def display(_x : A => String) : this.type = Reflect(__display({_ => _x}), this)
+                            def stringList() : List[String] = __stringList()
                             def selection() : iPropertySelection[A] = 
                                 {
                                     val result = new iPropertySelection[A] {}
                                     result.collection(Some(this))
                                     result
                                 }
-                            def swap(_i : Int, _j : Int) : this.type = Reflect({__value(Lists.swap(_i, _j, __value()))}, this)
+                            def swap(_i : Int, _j : Int) : this.type = 
+                                Reflect(
+                                    {
+                                        val l = Lists.swap(_i, _j, __value())
+                                        __value({_ => l})
+                                    }, this)
                         }
                 trait iPropertySelection[A <: iProperty]
                     extends iProperty

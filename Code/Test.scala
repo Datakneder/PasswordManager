@@ -17,6 +17,21 @@ package nl.datakneder.run
             {
                 def main(args : Array[String])
                     {
+                        //implicit def InjectXMLFunctions(_xml : scala.xml.Node) = 
+                        //    new Object
+                        //        {
+                        //            def labelsToCaptions() : scala.xml.Node = labelsToCaptions(_xml)
+                        //            def labelsToCaptions(_xml : scala.xml.Node) : scala.xml.Node = 
+                        //                {
+                        //                    _xml
+                        //                }
+                        //            def captionsToLabels() : scala.xml.Node = 
+                        //            def captionsToLabels(_xml : scala.xml.Node) : scala.xml.Node = 
+                        //                {
+                        //                    _xml
+                        //                }
+                        //        }
+                        
                         // Initialise
                             nl.datakneder.core.Utils.Implementation.initialise
                             nl.datakneder.core.Data.Implementation.initialise
@@ -115,9 +130,11 @@ package nl.datakneder.run
                                             val panel = TwoColumnPanel()
                                             
                                             val iterator = p.children().iterator
+                                            //System.out.println("AA Size = %d".format(p.children().size))
                                             iterator
                                                 .foreach(
                                                     {f =>
+                                                        //System.out.println("    adding '%s'".format(f.caption()))
                                                         val name = UI.DefaultName(f)
                                                         if (name == "") f.caption() else name
                                                         UI.DefaultComponent(f) match
@@ -165,18 +182,34 @@ package nl.datakneder.run
                                     .add({_ => _ => 
                                         {case n : iText => 
                                             //System.out.println("Name (Text) = %s".format(n.caption()))
-                                            TextField()
-                                                .minimalWidth(200)
-                                                .content.applyCast(n.apply _)
-                                                .content.update(n.apply(_))
+                                            if (n.isCalculated()) 
+                                                {
+                                                    Label()
+                                                        .caption({() => n.stringValue().getOrElse("")})
+                                                } 
+                                            else 
+                                                {
+                                                    TextField()
+                                                        .minimalWidth(200)
+                                                        .content.applyCast(n.apply _)
+                                                        .content.update(n.apply(_))
+                                                }
                                         }})
                                     .add({_ => _ => 
                                         {case n : iNumber => 
                                             //System.out.println("Name (Text) = %s".format(n.caption()))
-                                            TextField()
-                                                .minimalWidth(200)
-                                                .content.applyCast({() => n.stringValue().getOrElse("")})
-                                                .content.update(n.stringValue(_))
+                                            if (n.isCalculated()) 
+                                                {
+                                                    Label()
+                                                        .caption({() => n.stringValue().getOrElse("")})
+                                                } 
+                                            else 
+                                                {
+                                                    TextField()
+                                                        .minimalWidth(200)
+                                                        .content.applyCast({() => n.stringValue().getOrElse("")})
+                                                        .content.update(n.stringValue(_))
+                                                }
                                         }})
                             // Persistance
                                 Persistance.DefaultName
@@ -191,27 +224,27 @@ package nl.datakneder.run
                                 Persistance.DefaultXML
                                     .add({_ => _ => 
                                         {case n : iProperty => 
-                                            {<p>{
+                                            XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
-                                            }</p>}.copy(label = Persistance.DefaultName(n))
+                                            }</p>},Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
                                         {case n : iPropertyCollection[_] => 
-                                            {<p>{
+                                            XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
-                                            }<content>{n().map(Persistance.DefaultXML(_))}</content></p>}.copy(label = Persistance.DefaultName(n))
+                                            }<content>{n().map(Persistance.DefaultXML(_))}</content></p>},Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertyValue[_] => 
-                                            {<p>{
+                                        {case n : iPropertyValue[_] if (!n.isCalculated())=>
+                                            XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
-                                            }{new scala.xml.Text(n.stringValue().getOrElse(""))}</p>}.copy(label = Persistance.DefaultName(n))
+                                            }{new scala.xml.Text(n.stringValue().getOrElse(""))}</p>}, Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
                                         {case n : iPropertySelection[_] => 
-                                            {<p>{
+                                            XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
-                                                    }<content>{n().map({s => <item>{s}</item>})}</content></p>}.copy(label = Persistance.DefaultName(n))
+                                                    }<content>{n().map({s => <item>{s}</item>})}</content></p>}, Persistance.DefaultName(n))
                                         }})
                                 Persistance.LoadXML
                                     .add({_ => _ => 
@@ -223,9 +256,14 @@ package nl.datakneder.run
                                             _f.children()
                                                 .foreach(
                                                     {p => 
+                                                        //System.out.println("Loading (%s)".format(p.caption()))
+                                                        //System.out.println("Loading (%s, %s)".format(p.caption(), XMLUtils.label(p.caption())))
                                                         _xml.child
-                                                            .filter(_.label == p.caption())
-                                                            .foreach({n => Persistance.LoadXML(p, n)})
+                                                            .filter(_.label == XMLUtils.label(p.caption()))
+                                                            .foreach(
+                                                                {n =>
+                                                                    Persistance.LoadXML(p, n)
+                                                                })
                                                     })
                                         }})
                                     .add({_ => _ => 
@@ -234,7 +272,7 @@ package nl.datakneder.run
                                                 .foreach(
                                                     {p => 
                                                         _xml.child
-                                                            .filter(_.label == p.caption())
+                                                            .filter(_.label == XMLUtils.label(p.caption()))
                                                             .foreach({n => Persistance.LoadXML(p, n)})
                                                     })
                                             _xml.child
@@ -256,7 +294,7 @@ package nl.datakneder.run
                                                 .foreach(
                                                     {p => 
                                                         _xml.child
-                                                            .filter(_.label == p.caption())
+                                                            .filter(_.label == XMLUtils.label(p.caption()))
                                                             .foreach({n => Persistance.LoadXML(p, n)})
                                                     })
                                             _xml.child
@@ -273,7 +311,7 @@ package nl.datakneder.run
                                                     })
                                         }})
                                     .add({_ => _ => 
-                                        {case (_f : iPropertyValue[_], _xml : scala.xml.Node) =>
+                                        {case (_f : iPropertyValue[_], _xml : scala.xml.Node) if (!_f.isCalculated())=>
                                             Try(
                                                 {
                                                     val x = _xml.child.cast({case p : scala.xml.Atom[_] => p.text}).foldLeft("")(_ + _)
@@ -304,7 +342,9 @@ package nl.datakneder.run
                                     val data = this.Collection[PasswordData]("Data")
                                     data.display({n => n.name()})
                                     data.construction.add(Constructor("Add Data", {() => new PasswordData()}))
-                                    val location = data.selection()
+                                    val locations = new Collection[Location]("Location")({n => data(n).map(_.locations()).foldLeft(List[Location]())(_ ++ _)}).dependencies(data)
+                                    locations.display(_.name())
+                                    val location = locations.selection()
                                     location.caption("Location")
                                     location.singleSelection(true)
                                     location.parent(this)
@@ -324,6 +364,24 @@ package nl.datakneder.run
                                     val name = this.Text("Name","")
                                     val mandatory = this.Text("Mandatory", "")
                                     val alphabetPattern = this.Text("Alphabet", "\\w\\d")
+                                    val alphabet = this.Text(" ", " not defined.")
+                                        alphabet(
+                                            {n => 
+                                                TryCatch(
+                                                    {
+                                                        val pattern = java.util.regex.Pattern.compile("[" + alphabetPattern() + "]")
+                                                        Some(Range(255).map("" + _.toChar).filter({c => pattern.matcher(c).matches}).mkString)
+                                                        //val pattern = java.util.regex.Pattern.compile("[" + alphabetPattern() + "]")
+                                                        //Some(
+                                                        //    Range(255)
+                                                        //        .map({i => i.toByte.asInstanceOf[Char]})
+                                                        //        .filter(pattern.matcher(_).matches)
+                                                        //        .mkString)
+                                                    }, {Some("undefined.")})
+                                            })
+                                        .dependencies(alphabetPattern)
+                                        //.parent(Some(this))
+                                        //children.add(alphabet)
                                     val user = this.Text("User","")
                                     val key = this.Text("Key","")
                                     val size = this.Number("Size",40)

@@ -4,7 +4,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Packages._
         
         object Framework
-            extends Template_FrameworkPackage("Data", 1492246262864L /*CompileDate*/)
+            extends Template_FrameworkPackage("Data", 1492773806046L /*CompileDate*/)
                 {
                     import nl.datakneder.core.Utils.Framework.Reflect
                     
@@ -278,6 +278,7 @@ package nl.datakneder.core.Data
                                                     def print(_x : scala.xml.Node) : scala.xml.Node 
                                                     def label(_xml : scala.xml.Node) : String
                                                     def label(_xml : scala.xml.Node, _a : String) : scala.xml.Node
+                                                    def label(_x : String) : String
                                                     def attribute(_xml : scala.xml.Node, _a : String) : Option[String]
                                                     def addAttribute(_xml : scala.xml.Node, _name : String, _content : String) : scala.xml.Node
                                                 }
@@ -285,6 +286,7 @@ package nl.datakneder.core.Data
                                             def extractText(_x : scala.xml.Node) : String = interface().extractText(_x)
                                             def print(_x : scala.xml.Node) : scala.xml.Node = interface().print(_x) 
                                             def label(_xml : scala.xml.Node) : String = interface().label(_xml)
+                                            def label(_x : String) : String = interface().label(_x)
                                             def label(_xml : scala.xml.Node, _a : String) : scala.xml.Node = interface().label(_xml, _a)
                                             def attribute(_xml : scala.xml.Node, _a : String) : Option[String] = interface().attribute(_xml, _a)
                                             def addAttribute(_xml : scala.xml.Node, _name : String, _content : String) : scala.xml.Node = interface().addAttribute(_xml, _name, _content)
@@ -460,7 +462,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils._
         
         object Implementation
-            extends Template_ImplementationPackage("Data", 1492246262864L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_ImplementationPackage("Data", 1492773806046L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Utils.Framework._
                     import Framework.KeyDefinitions.NoModifier
@@ -891,6 +893,7 @@ package nl.datakneder.core.Data
                                                         }
                                                 }
                                             def label(_xml : scala.xml.Node) : String = TryCatch({fromLabel(_xml.label)}, "")
+                                            def label(_x : String) : String = TryCatch(toLabel(_x), "Unable to convert")
                                         }
                         // Atoms
                             object Atom
@@ -1194,7 +1197,7 @@ package nl.datakneder.core.Data
         import nl.datakneder.core.Utils.Framework._
         
         object Test
-            extends Template_TestPackage("Data", 1492246262864L /*CompileDate*/, nl.datakneder.core.Data.Framework)
+            extends Template_TestPackage("Data", 1492773806046L /*CompileDate*/, nl.datakneder.core.Data.Framework)
                 {
                     import nl.datakneder.core.Acid.Framework.Acid
 
