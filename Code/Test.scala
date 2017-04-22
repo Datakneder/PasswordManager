@@ -17,21 +17,6 @@ package nl.datakneder.run
             {
                 def main(args : Array[String])
                     {
-                        //implicit def InjectXMLFunctions(_xml : scala.xml.Node) = 
-                        //    new Object
-                        //        {
-                        //            def labelsToCaptions() : scala.xml.Node = labelsToCaptions(_xml)
-                        //            def labelsToCaptions(_xml : scala.xml.Node) : scala.xml.Node = 
-                        //                {
-                        //                    _xml
-                        //                }
-                        //            def captionsToLabels() : scala.xml.Node = 
-                        //            def captionsToLabels(_xml : scala.xml.Node) : scala.xml.Node = 
-                        //                {
-                        //                    _xml
-                        //                }
-                        //        }
-                        
                         // Initialise
                             nl.datakneder.core.Utils.Implementation.initialise
                             nl.datakneder.core.Data.Implementation.initialise
@@ -48,20 +33,6 @@ package nl.datakneder.run
                                     read({x => Some(x)})
                                     write({x => x})
                                 }
-                            
-                        implicit def InjectText(_owner : iProperty) = 
-                            new Object 
-                                {
-                                    def Text(_x : String) : iText = 
-                                        {
-                                            val result = new Text(_x)
-                                            result.parent(_owner)
-                                            _owner.children.add(result)
-                                            result
-                                        }
-                                    def Text(_x : String, _v : String) : iText = Text(_x)(_v) 
-                                }
-
                         trait iNumber
                             extends iPropertyValue[Int]
                         class Number(_x : String)
@@ -71,20 +42,6 @@ package nl.datakneder.run
                                     read({x => Some(x.toInt)})
                                     write({x => x.toString})
                                 }
-                            
-                        implicit def InjectNumber(_owner : iProperty) = 
-                            new Object 
-                                {
-                                    def Number(_x : String) : iNumber = 
-                                        {
-                                            val result = new Number(_x)
-                                            result.parent(_owner)
-                                            _owner.children.add(result)
-                                            result
-                                        }
-                                    def Number(_x : String, _v : Int) : iNumber = Number(_x)(_v) 
-                                }
-                                
                         // Setup
                             // UI
                                 UI.DefaultName
@@ -337,17 +294,17 @@ package nl.datakneder.run
                         object Settings
                             extends Tuple("Settings")
                                 {
-                                    val name = this.Text("Name", "Harry")
-                                    val age = this.Number("Age", 20)
-                                    val data = this.Collection[PasswordData]("Data")
+                                    val name = add(new Text("Name")("Harry"))
+                                    val age = add(new Number("Age")(20))
+                                    val data = add(new Collection[PasswordData]("Data"))
                                     data.display({n => n.name()})
                                     data.construction.add(Constructor("Add Data", {() => new PasswordData()}))
                                     val locations = new Collection[Location]("Location")({n => data(n).map(_.locations()).foldLeft(List[Location]())(_ ++ _)}).dependencies(data)
                                     locations.display(_.name())
                                     val location = locations.selection()
-                                    location.caption("Location")
-                                    location.singleSelection(true)
-                                    location.parent(this)
+                                    location.caption({_ => "Location"})
+                                    location.singleSelection.assign(true)
+                                    location.parent.assign(this)
                                     children.add(location)
                                     
                                 }
@@ -355,37 +312,29 @@ package nl.datakneder.run
                         class Location
                             extends Tuple("Location")
                                 {
-                                    val name = this.Text("Name", "")
-                                    val url = this.Text("URL", "")
+                                    val name = add(new Text("Name")(""))
+                                    val url = add(new Text("URL")(""))
                                 }
                         class PasswordData
                             extends Tuple("Data")
                                 {
-                                    val name = this.Text("Name","")
-                                    val mandatory = this.Text("Mandatory", "")
-                                    val alphabetPattern = this.Text("Alphabet", "\\w\\d")
-                                    val alphabet = this.Text(" ", " not defined.")
+                                    val name = add(new Text("Name")(""))
+                                    val user = add(new Text("User")(""))
+                                    val key = add(new Text("Key")(""))
+                                    val mandatory = add(new Text("Mandatory")(""))
+                                    val alphabetPattern = add(new Text("Alphabet")("\\w\\d"))
+                                    val alphabet = new Text(" ")(" not defined.")
                                         alphabet(
                                             {n => 
                                                 TryCatch(
                                                     {
                                                         val pattern = java.util.regex.Pattern.compile("[" + alphabetPattern() + "]")
                                                         Some(Range(255).map("" + _.toChar).filter({c => pattern.matcher(c).matches}).mkString)
-                                                        //val pattern = java.util.regex.Pattern.compile("[" + alphabetPattern() + "]")
-                                                        //Some(
-                                                        //    Range(255)
-                                                        //        .map({i => i.toByte.asInstanceOf[Char]})
-                                                        //        .filter(pattern.matcher(_).matches)
-                                                        //        .mkString)
                                                     }, {Some("undefined.")})
                                             })
                                         .dependencies(alphabetPattern)
-                                        //.parent(Some(this))
-                                        //children.add(alphabet)
-                                    val user = this.Text("User","")
-                                    val key = this.Text("Key","")
-                                    val size = this.Number("Size",40)
-                                    val locations = this.Collection[Location]("Locations")
+                                    val size = add(new Number("Size")(40))
+                                    val locations = add(new Collection[Location]("Locations"))
                                     locations.display({n => n.name()})
                                     locations.construction.add(Constructor("Add Location", {() => new Location()}))
                                 }

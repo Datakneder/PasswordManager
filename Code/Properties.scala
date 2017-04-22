@@ -1,58 +1,75 @@
 package nl.datakneder.temp
     {
+        import scala.language.reflectiveCalls
         import scala.language.implicitConversions
         import nl.datakneder.core.Utils.Framework._
         import nl.datakneder.temp.Calculation._
         
         object Properties
             {
-                class Variable[A, B](_n : () => A, _owner : B)
+                trait iVariable[A,B]
                     {
-                        private var __value : () => A = _n
-                        def apply() : A = __value()
-                        def apply(_x : A) : B = apply({() => _x}) 
-                        def apply(_x : () => A) : B = 
-                            {
-                                __value = _x
-                                _owner
-                            }
+                        def calculation() : iHasCalculation[A]
+                        def apply() : A
+                        def assign(_x : A) : B 
+                        def apply(_x : Long => A, _d : iHasCalculation[_]*) : B
                     }
+                class Variable[A, B](_n : Long => A, _owner : B)
+                    extends iVariable[A, B]
+                        {
+                            private var __value = new Calculation[A](_n)
+                            def calculation() : iHasCalculation[A] = __value
+                            def apply() : A = __value()
+                            def assign(_x : A) : B = apply({_ => _x})
+                            def apply(_x : Long => A, _d : iHasCalculation[_]*) : B = Reflect(__value(_x, _d :_*), _owner)
+                        }
+                implicit def InjectOptionalVariable[A, B](_x : iOptionalVariable[A, B]) =
+                    new Object
+                        {
+                            def assign[C](_y : C) : iOptionalVariable[A, B] = Reflect(Try(_x.assign(Some(_y.asInstanceOf[A]))), _x)
+                        }
+                trait iOptionalVariable[A, B]
+                    extends iVariable[Option[A], B]
+                        {
+                        }
                 class OptionalVariable[A, B](_owner : B)
-                    {
-                        private var __value : Option[A] = None
-                        def apply() : Option[A] = __value
-                        def apply(_x : Option[A]) : B = 
-                            {
-                                __value = _x
-                                _owner
-                            }
-                        def apply(_x : A) : B = apply(Some(_x))
-                    }
-                class VariableList[A, B](_owner : B)
-                    {
-                        private var __value : List[A] = List()
-                        def apply() : List[A] = __value
-                        def apply(_x : List[A]) : B = 
-                            {
-                                __value = _x
-                                _owner
-                            }
-                        def add(_x : A) : B = apply(apply() :+ _x)
-                        def remove(_x : A) : B = apply(apply().filter(_ != _x))
-                        def clear() : B = apply(List())
-                        def size() : Int = apply().size
-                    }
+                    extends Variable[Option[A], B]({_ => None}, _owner)
+                    with iOptionalVariable[A, B]
+                        {
+                        }
+                trait iListVariable[A, B]
+                    extends iVariable[List[A], B]
+                        {
+                            def clear() : B
+                            def size() : Int
+                            def add(_x : A*) : B
+                            def add(_x : iListVariable[A, _]) : B
+                            def remove(_x : A*) : B
+                            def remove(_x : iListVariable[A, _]) : B
+                        }
+                class ListVariable[A, B](_owner : B)
+                    extends Variable[List[A], B]({_ => List()}, _owner)
+                    with iListVariable[A, B]
+                        {
+                            def clear() : B = assign(List[A]())
+                            def size() : Int = apply().size
+                            def add(_x : A*) : B = assign(apply() ++ _x.toList)
+                            def add(_x : iListVariable[A, _]) : B = add(_x() :_*)
+                            def remove(_x : A*) : B = assign(apply().filter(!_x.contains(_)))
+                            def remove(_x : iListVariable[A, _]) : B = remove(_x() :_*)
+                        }
                 trait iProperty
-                    {
-                        val caption = new Variable({() => ""}, this)
-                        val parent = new OptionalVariable[iProperty, iProperty](this)
+                    {__property =>
+                        val caption = new Variable({_ => ""}, this)
+                        val parent = new OptionalVariable[iProperty, this.type](this)
+                        private val __parent = new Calculation[Option[iProperty]]({_ => None})
                         def parents() : List[iProperty] = parents(true)
                         def parents(_x : Boolean) : List[iProperty] = 
                             {
                                 var result : List [iProperty] = if (_x) List(this) else List()
                                 result ++ parent().map(_.parents(true)).getOrElse(List())
                             }
-                        val children = new VariableList[iProperty, iProperty](this)
+                        val children = new ListVariable[iProperty, this.type](this)
                     }
                 trait iPropertyValue[A]
                     extends iProperty
@@ -150,13 +167,13 @@ package nl.datakneder.temp
                                     }, this)
                             def clear() : this.type = Reflect(__value({_ => List[A]()}), this)
                             def size() : Int = __value().size
-                            val construction = new VariableList[Constructor[_], this.type](this)
+                            val construction = new ListVariable[Constructor[_], this.type](this)
                             def display(_x : A => String) : this.type = Reflect(__display({_ => _x}), this)
                             def stringList() : List[String] = __stringList()
                             def selection() : iPropertySelection[A] = 
                                 {
                                     val result = new iPropertySelection[A] {}
-                                    result.collection(Some(this))
+                                    result.collection.assign(this)
                                     result
                                 }
                             def swap(_i : Int, _j : Int) : this.type = 
@@ -169,9 +186,9 @@ package nl.datakneder.temp
                 trait iPropertySelection[A <: iProperty]
                     extends iProperty
                         {
-                            private val __value = new VariableList[String, this.type](this)
+                            private val __value = new ListVariable[String, this.type](this)
                             def apply() : List[String] = __value()
-                            def apply(_x : List[String]) : this.type = Reflect(__value(_x), this)
+                            def apply(_x : List[String]) : this.type = Reflect(__value.assign(_x), this)
                             def add(_x : String) : this.type = 
                                 Reflect(
                                     {
@@ -180,7 +197,7 @@ package nl.datakneder.temp
                             def remove(_x : String) : this.type = __value.remove(_x)
                             def clear() : this.type = __value.clear()
                             def size() : Int = __value.size
-                            val singleSelection = new Variable({() => false}, this)
+                            val singleSelection = new Variable({_ => false}, this)
                             def moveUp() : this.type =
                                 Reflect(
                                     {
@@ -213,7 +230,7 @@ package nl.datakneder.temp
                                                             })
                                             }
                                     }, this)
-                            var collection = new Variable[Option[iPropertyCollection[A]], this.type]({() => None}, this)
+                            var collection = new OptionalVariable[iPropertyCollection[A], this.type](this)
                             def selectedItems() : List[A] = 
                                 {
                                     collection() match 
@@ -237,11 +254,17 @@ package nl.datakneder.temp
                 class TupleTemplate(_x : String)
                     extends iProperty
                         {__template =>
-                            caption(_x)
+                            caption({_ => _x})
+                            def add[A <: iProperty](_x : A) : A = 
+                                Reflect(
+                                    {
+                                        _x.parent.assign(this)
+                                        children.add(_x)
+                                    }, _x)
                             class Tuple(_x : String)
                                 extends TupleTemplate(_x)
                                     {
-                                        parent(__template)
+                                        parent.assign(__template)
                                         __template.children.add(this)
                                         //System.out.println("Inner tuple %s.".format(_x))
                                     }
@@ -254,35 +277,35 @@ package nl.datakneder.temp
                 class PropertyValue[A](_x : String)
                     extends iPropertyValue[A]
                         {
-                            caption(_x)
+                            caption({_ => _x})
                         }
-                implicit def InjectPropertyValue(_owner : iProperty) = 
-                    new Object 
-                        {
-                            def PropertyValue[A](_x : String) : iPropertyValue[A] = 
-                                {
-                                    val result = new PropertyValue[A](_x)
-                                    result.parent(Some(_owner))
-                                    _owner.children.add(result)
-                                    result
-                                }
-                            def PropertyValue[A](_x : String, _v : A) : iPropertyValue[A] = PropertyValue(_x)(_v)
-                        }
+                //implicit def InjectPropertyValue(_owner : iProperty) = 
+                //    new Object 
+                //        {
+                //            def PropertyValue[A](_x : String) : iPropertyValue[A] = 
+                //                {
+                //                    val result = new PropertyValue[A](_x)
+                //                    result.parent.assign(_owner)
+                //                    _owner.children.add(result)
+                //                    result
+                //                }
+                //            def PropertyValue[A](_x : String, _v : A) : iPropertyValue[A] = PropertyValue(_x)(_v)
+                //        }
                 class Collection[A <: iProperty](_x : String)
                     extends Tuple(_x)
                     with iPropertyCollection[A]
                         {
                         }
-                implicit def InjectPropertyCollection(_owner : iProperty) = 
-                    new Object 
-                        {
-                            def Collection[A <: iProperty](_x : String) : iPropertyCollection[A] = 
-                                {
-                                    val result = new Collection[A](_x)
-                                    result.parent(Some(_owner))
-                                    _owner.children.add(result)
-                                    result
-                                }
-                        }
+                //implicit def InjectPropertyCollection(_owner : iProperty) = 
+                //    new Object 
+                //        {
+                //            def Collection[A <: iProperty](_x : String) : iPropertyCollection[A] = 
+                //                {
+                //                    val result = new Collection[A](_x)
+                //                    result.parent.assign(_owner)
+                //                    _owner.children.add(result)
+                //                    result
+                //                }
+                //        }
             }
     }
