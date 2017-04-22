@@ -9,7 +9,7 @@ package nl.datakneder.core.UI.Rock
         import nl.datakneder.core.Data.Framework.KeyDefinitions._
             
         object Framework
-            extends Template_FrameworkPackage("Rock", 1492638915032L /*CompileDate*/)
+            extends Template_FrameworkPackage("Rock", 1492890084584L /*CompileDate*/)
                 {
                     // Editor
                         //implicit def InjectEdit(_x : Object) =
@@ -114,7 +114,8 @@ package nl.datakneder.core.UI.Rock
                                     def lineBorder(_x : Int) : this.type
                                     def lineBorder(_x : java.awt.Color) : this.type
                                     def lineBorder(_x : java.awt.Color, _y : Int) : this.type 
-                                    def titleBorder(_x : String) : this.type 
+                                    def titleBorder(_x : String) : this.type
+                                    def etchedBorder() : this.type
                                 }
                             trait iContent[A]
                                 {
@@ -727,7 +728,7 @@ package nl.datakneder.core.UI.Rock
         import nl.datakneder.core.Data.Framework.KeyDefinitions._
         
         object Implementation
-            extends Template_ImplementationPackage("Rock", 1492638915032L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
+            extends Template_ImplementationPackage("Rock", 1492890084584L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
                 {
                     val Framework = nl.datakneder.core.UI.Rock.Framework
                   
@@ -1536,7 +1537,8 @@ package nl.datakneder.core.UI.Rock
                                                 def lineBorder(_x : Int) : this.type = lineBorder(java.awt.Color.BLACK, _x)
                                                 def lineBorder(_x : java.awt.Color) : this.type = lineBorder(_x, 1)
                                                 def lineBorder(_x : java.awt.Color, _y : Int) : this.type = addBorder(javax.swing.BorderFactory.createLineBorder(_x, _y))
-                                                def titleBorder(_x : String) : this.type = addBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), _x))                                        
+                                                def titleBorder(_x : String) : this.type = addBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), _x))
+                                                def etchedBorder() : this.type = addBorder(javax.swing.BorderFactory.createEtchedBorder())
                                             }
                                     trait iPreferredSize
                                         extends Framework.iPreferredSize
@@ -3334,7 +3336,7 @@ package nl.datakneder.core.UI.Rock
         import nl.datakneder.core.Acid.Framework.Acid
         
         object Test
-            extends Template_TestPackage("Rock", 1492638915032L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
+            extends Template_TestPackage("Rock", 1492890084584L /*CompileDate*/, nl.datakneder.core.UI.Rock.Framework)
                 {
                     class Rock()
                         extends nl.datakneder.core.Acid.Implementation.TestSet.Class("Rock")

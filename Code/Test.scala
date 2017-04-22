@@ -12,6 +12,7 @@ package nl.datakneder.run
         import nl.datakneder.core.UI.Rock.Framework._
         import nl.datakneder.core.Utils.Framework._
         import nl.datakneder.temp.Reflection._
+        import nl.datakneder.core.Packages._
         
         object Test
             {
@@ -23,35 +24,108 @@ package nl.datakneder.run
                             nl.datakneder.core.UI.Rock.Implementation.initialise
                             nl.datakneder.temp.UI.initialise()
                             nl.datakneder.temp.Persistance.initialise()
-                        
-                        trait iText
-                            extends iPropertyValue[String]
-                        class Text(_x : String)
-                            extends PropertyValue[String](_x)
-                            with iText
+                        object Text
+                            extends Template_Factory("Text")
                                 {
-                                    read({x => Some(x)})
-                                    write({x => x})
+                                    trait Interface
+                                        extends PropertyValue.Interface[String]
+                                    class Class(_x : String)
+                                        extends PropertyValue[String](_x)
+                                        with Interface
+                                            {
+                                                read({x => Some(x)})
+                                                write({x => x})
+                                            }
+                                    trait iFactory
+                                        {
+                                            def apply(_c : String) : Interface
+                                        }
+                                    factory(
+                                        new iFactory
+                                            {
+                                                def apply(_c : String) : Interface = new Class(_c)
+                                            })
+                                    def apply[A,B](_c : String) : Interface = factory()(_c)
                                 }
-                        trait iNumber
-                            extends iPropertyValue[Int]
-                        class Number(_x : String)
-                            extends PropertyValue[Int](_x)
-                            with iNumber
+                        object Number
+                            extends Template_Factory("Number")
                                 {
-                                    read({x => Some(x.toInt)})
-                                    write({x => x.toString})
+                                    trait Interface
+                                        extends PropertyValue.Interface[Int]
+                                    class Class(_x : String)
+                                        extends PropertyValue[Int](_x)
+                                        with Number.Interface
+                                            {
+                                                read({x => Some(x.toInt)})
+                                                write({x => x.toString})
+                                            }
+                                    trait iFactory
+                                        {
+                                            def apply(_c : String) : Interface
+                                        }
+                                    factory(
+                                        new iFactory
+                                            {
+                                                def apply(_c : String) : Interface = new Class(_c)
+                                            })
+                                    def apply[A,B](_c : String) : Interface = factory()(_c)
+                                }
+                        object FileName
+                            extends Template_Factory("FileName")
+                                {
+                                    trait Interface
+                                        extends PropertyValue.Interface[String]
+                                    class Class(_x : String)
+                                        extends PropertyValue[String](_x)
+                                        with FileName.Interface
+                                            {
+                                                read({x => Some(x)})
+                                                write({x => x.toString})
+                                            }
+                                    trait iFactory
+                                        {
+                                            def apply(_c : String) : Interface
+                                        }
+                                    factory(
+                                        new iFactory
+                                            {
+                                                def apply(_c : String) : Interface = new Class(_c)
+                                            })
+                                    def apply[A,B](_c : String) : Interface = factory()(_c)
+                                }
+                        object FolderName
+                            extends Template_Factory("FolderName")
+                                {
+                                    trait Interface
+                                        extends PropertyValue.Interface[String]
+                                    class Class(_x : String)
+                                        extends PropertyValue[String](_x)
+                                        with FolderName.Interface
+                                            {
+                                                read({x => Some(x)})
+                                                write({x => x.toString})
+                                            }
+                                    trait iFactory
+                                        {
+                                            def apply(_c : String) : Interface
+                                        }
+                                    factory(
+                                        new iFactory
+                                            {
+                                                def apply(_c : String) : Interface = new Class(_c)
+                                            })
+                                    def apply[A,B](_c : String) : Interface = factory()(_c)
                                 }
                         // Setup
                             // UI
                                 UI.DefaultName
                                     .add({_ => _ => 
-                                        {case n : iProperty => 
+                                        {case n : Property.Interface => 
                                             n.caption()
                                         }})
                                 UI.DefaultPopupMenu
                                     .add({_ => _ => 
-                                        {case p : iPropertySelection[_] => 
+                                        {case p : PropertySelection.Interface[_] => 
                                             //System.out.println("Name (iProperty) = %s".format(p.caption()))
                                             var result = List[iAddableComponent]()
                                             val collection = p.collection().get
@@ -62,7 +136,7 @@ package nl.datakneder.run
                                                             MenuItem(c.name)
                                                                 .onClick(
                                                                     {() => 
-                                                                        val n = c.construct().asInstanceOf[iProperty]
+                                                                        val n = c.construct().asInstanceOf[Property.Interface]
                                                                         
                                                                         if (n.edit())
                                                                             {
@@ -82,7 +156,7 @@ package nl.datakneder.run
                                         }})
                                 UI.DefaultComponent
                                     .add({_ => _ => 
-                                        {case p : iProperty => 
+                                        {case p : Property.Interface => 
                                             //System.out.println("Name (iProperty) = %s".format(p.caption()))
                                             val panel = TwoColumnPanel()
                                             
@@ -105,7 +179,7 @@ package nl.datakneder.run
                                             panel
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertySelection[_] =>
+                                        {case n : PropertySelection.Interface[_] =>
                                             val collection = n.collection().get
                                             //System.out.println("Name (ListBox) = %s".format(n.caption()))
                                             //n().foreach({p => System.out.println("   " + p)})
@@ -133,11 +207,11 @@ package nl.datakneder.run
                                                 }
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertyCollection[_] =>
+                                        {case n : PropertyCollection.Interface[_] =>
                                             UI.DefaultComponent(n.selection())
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iText => 
+                                        {case n : Text.Interface => 
                                             //System.out.println("Name (Text) = %s".format(n.caption()))
                                             if (n.isCalculated()) 
                                                 {
@@ -153,7 +227,7 @@ package nl.datakneder.run
                                                 }
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iNumber => 
+                                        {case n : Number.Interface => 
                                             //System.out.println("Name (Text) = %s".format(n.caption()))
                                             if (n.isCalculated()) 
                                                 {
@@ -168,6 +242,87 @@ package nl.datakneder.run
                                                         .content.update(n.stringValue(_))
                                                 }
                                         }})
+                                    .add({_ => _ => 
+                                        {case n : FileName.Interface => 
+                                            //System.out.println("Name (FileName) = %s".format(n.caption()))
+                                            if (n.isCalculated()) 
+                                                {
+                                                    Label()
+                                                        .caption({() => n.stringValue().getOrElse("")})
+                                                } 
+                                            else 
+                                                {
+                                                    val borderPanel = BorderPanel()
+                                                    val txt = 
+                                                        TextField()
+                                                            .minimalWidth(200)
+                                                            .content.applyCast(n.apply _)
+                                                            .content.update(n.apply(_))
+                                                            .backColor({() => 
+                                                                TryCatch(
+                                                                    {
+                                                                        if (new java.io.File(n()).exists || n().size == 0) Some(java.awt.Color.WHITE) else Some(java.awt.Color.RED)
+                                                                    }, Some(java.awt.Color.RED))})
+                                                    def openFileDialog() : Unit = 
+                                                        {
+                                                            val fileChooser = new javax.swing.JFileChooser()
+                                                            Try({fileChooser.setSelectedFile(new java.io.File(n()))})
+                                                            if (fileChooser.showOpenDialog(borderPanel.component) == javax.swing.JFileChooser.APPROVE_OPTION)
+                                                                {
+                                                                    n(fileChooser.getSelectedFile.getAbsolutePath)
+                                                                }
+                                                        }
+                                                    val lbl = 
+                                                        Label(" ... ")
+                                                            .etchedBorder()
+                                                            .onClick(openFileDialog _)
+                                                    borderPanel
+                                                        .keyAction(VK_F2, openFileDialog _)
+                                                        .center(txt)
+                                                        .east(lbl)
+                                                }
+                                        }})
+                                    .add({_ => _ => 
+                                        {case n : FolderName.Interface => 
+                                            //System.out.println("Name (FolderName) = %s".format(n.caption()))
+                                            if (n.isCalculated()) 
+                                                {
+                                                    Label()
+                                                        .caption({() => n.stringValue().getOrElse("")})
+                                                } 
+                                            else 
+                                                {
+                                                    val borderPanel = BorderPanel()
+                                                    val txt = 
+                                                        TextField()
+                                                            .minimalWidth(200)
+                                                            .content.applyCast(n.apply _)
+                                                            .content.update(n.apply(_))
+                                                            .backColor({() => 
+                                                                TryCatch(
+                                                                    {
+                                                                        if ((new java.io.File(n()).exists && new java.io.File(n()).isDirectory) || n().size == 0) Some(java.awt.Color.WHITE) else Some(java.awt.Color.RED)
+                                                                    }, Some(java.awt.Color.RED))})
+                                                    def openFileDialog() : Unit = 
+                                                        {
+                                                            val fileChooser = new javax.swing.JFileChooser()
+                                                            fileChooser.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY)
+                                                            Try({fileChooser.setSelectedFile(new java.io.File(n()))})
+                                                            if (fileChooser.showOpenDialog(borderPanel.component) == javax.swing.JFileChooser.APPROVE_OPTION)
+                                                                {
+                                                                    n(fileChooser.getSelectedFile.getAbsolutePath)
+                                                                }
+                                                        }
+                                                    val lbl = 
+                                                        Label(" ... ")
+                                                            .etchedBorder()
+                                                            .onClick(openFileDialog _)
+                                                    borderPanel
+                                                        .keyAction(VK_F2, openFileDialog _)
+                                                        .center(txt)
+                                                        .east(lbl)
+                                                }
+                                        }})
                             // Persistance
                                 Persistance.DefaultName
                                     .add({_ => _ => 
@@ -175,30 +330,30 @@ package nl.datakneder.run
                                             TryCatch(n.getClass.getName.cutFrom(".",-1), "UnknownClass")
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iProperty => 
+                                        {case n : Property.Interface => 
                                             n.caption()
                                         }})
                                 Persistance.DefaultXML
                                     .add({_ => _ => 
-                                        {case n : iProperty => 
+                                        {case n : Property.Interface => 
                                             XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
                                             }</p>},Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertyCollection[_] => 
+                                        {case n : PropertyCollection.Interface[_] => 
                                             XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
                                             }<content>{n().map(Persistance.DefaultXML(_))}</content></p>},Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertyValue[_] if (!n.isCalculated())=>
+                                        {case n : PropertyValue.Interface[_] if (!n.isCalculated())=>
                                             XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
                                             }{new scala.xml.Text(n.stringValue().getOrElse(""))}</p>}, Persistance.DefaultName(n))
                                         }})
                                     .add({_ => _ => 
-                                        {case n : iPropertySelection[_] => 
+                                        {case n : PropertySelection.Interface[_] => 
                                             XMLUtils.label({<p>{
                                                 n.children().map({c => Persistance.DefaultXML(c)})
                                                     }<content>{n().map({s => <item>{s}</item>})}</content></p>}, Persistance.DefaultName(n))
@@ -209,7 +364,7 @@ package nl.datakneder.run
                                             System.out.println("Could not resolve: " + x)
                                         }})
                                     .add({_ => _ => 
-                                        {case (_f : iProperty, _xml : scala.xml.Node) =>
+                                        {case (_f : Property.Interface, _xml : scala.xml.Node) =>
                                             _f.children()
                                                 .foreach(
                                                     {p => 
@@ -224,7 +379,7 @@ package nl.datakneder.run
                                                     })
                                         }})
                                     .add({_ => _ => 
-                                        {case (_f : iPropertyCollection[_], _xml : scala.xml.Node) =>
+                                        {case (_f : PropertyCollection.Interface[_], _xml : scala.xml.Node) =>
                                             _f.children()
                                                 .foreach(
                                                     {p => 
@@ -246,7 +401,7 @@ package nl.datakneder.run
                                                     })
                                         }})
                                     .add({_ => _ => 
-                                        {case (_f : iPropertySelection[_], _xml : scala.xml.Node) =>
+                                        {case (_f : PropertySelection.Interface[_], _xml : scala.xml.Node) =>
                                             _f.children()
                                                 .foreach(
                                                     {p => 
@@ -268,7 +423,7 @@ package nl.datakneder.run
                                                     })
                                         }})
                                     .add({_ => _ => 
-                                        {case (_f : iPropertyValue[_], _xml : scala.xml.Node) if (!_f.isCalculated())=>
+                                        {case (_f : PropertyValue.Interface[_], _xml : scala.xml.Node) if (!_f.isCalculated())=>
                                             Try(
                                                 {
                                                     val x = _xml.child.cast({case p : scala.xml.Atom[_] => p.text}).foldLeft("")(_ + _)
@@ -294,8 +449,8 @@ package nl.datakneder.run
                         object Settings
                             extends Tuple("Settings")
                                 {
-                                    val name = add(new Text("Name")("Harry"))
-                                    val age = add(new Number("Age")(20))
+                                    val name = add(Text("Name")("Harry"))
+                                    val age = add(Number("Age")(20))
                                     val data = add(new Collection[PasswordData]("Data"))
                                     data.display({n => n.name()})
                                     data.construction.add(Constructor("Add Data", {() => new PasswordData()}))
@@ -306,24 +461,25 @@ package nl.datakneder.run
                                     location.singleSelection.assign(true)
                                     location.parent.assign(this)
                                     children.add(location)
-                                    
+                                    val javaExe = add(FileName("Java Executable")(""))
+                                    val destination = add(FolderName("Destination")(""))
                                 }
                         //System.out.println("Settings.location: " + Settings.location.parents.map(_.caption()).mkString("-"))
                         class Location
                             extends Tuple("Location")
                                 {
-                                    val name = add(new Text("Name")(""))
-                                    val url = add(new Text("URL")(""))
+                                    val name = add(Text("Name")(""))
+                                    val url = add(Text("URL")(""))
                                 }
                         class PasswordData
                             extends Tuple("Data")
                                 {
-                                    val name = add(new Text("Name")(""))
-                                    val user = add(new Text("User")(""))
-                                    val key = add(new Text("Key")(""))
-                                    val mandatory = add(new Text("Mandatory")(""))
-                                    val alphabetPattern = add(new Text("Alphabet")("\\w\\d"))
-                                    val alphabet = new Text(" ")(" not defined.")
+                                    val name = add(Text("Name")(""))
+                                    val user = add(Text("User")(""))
+                                    val key = add(Text("Key")(""))
+                                    val mandatory = add(Text("Mandatory")(""))
+                                    val alphabetPattern = add(Text("Alphabet")("\\w\\d"))
+                                    val alphabet = Text(" ")(" not defined.")
                                         alphabet(
                                             {n => 
                                                 TryCatch(
@@ -333,7 +489,7 @@ package nl.datakneder.run
                                                     }, {Some("undefined.")})
                                             })
                                         .dependencies(alphabetPattern)
-                                    val size = add(new Number("Size")(40))
+                                    val size = add(Number("Size")(40))
                                     val locations = add(new Collection[Location]("Locations"))
                                     locations.display({n => n.name()})
                                     locations.construction.add(Constructor("Add Location", {() => new Location()}))
